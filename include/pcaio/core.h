@@ -2,16 +2,25 @@
 #define PCAIO_H_
 
 
-typedef int (*pcaio_taskentry_t) (int argc, char *argv[]);
+#include <ucontext.h>
 
 
-struct pcaio {
-    int deleteme;
-};
+typedef int (*pcaio_entrypoint_t) (int argc, void *argv[]);
 
 
 struct pcaio_task {
-    int deleteme;
+    const char *id;
+    struct ucontext_t uctx;
+    pcaio_entrypoint_t func;
+    int argc;
+    void *argv[];
+};
+
+
+/* this structure is not thread-safe */
+struct pcaio {
+    struct ucontext_t uctx;
+    size_t task_stacksize;
 };
 
 
@@ -23,8 +32,13 @@ int
 pcaio_free(struct pcaio *p);
 
 
+int
+pcaio_schedule(struct pcaio *p, struct pcaio_task *t);
+
+
 struct pcaio_task *
-pcaio_spawn(struct pcaio *p, pcaio_taskentry_t entry, int argc, ...);
+pcaio_spawn(struct pcaio *p, const char *id, pcaio_entrypoint_t func,
+        int argc, ...);
 
 
 int

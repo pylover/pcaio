@@ -10,7 +10,7 @@
 
 
 int
-worker(int argc, char *argv[]) {
+worker(int argc, void *argv[]) {
     return -1;
 }
 
@@ -23,7 +23,7 @@ test_api() {
     p = pcaio_new();
     isnotnull(p);
 
-    t = pcaio_spawn(p, worker, 2, (long)"foo", 5);
+    t = pcaio_spawn(p, "worker#1", worker, 2, "foo", "bar");
     isnotnull(t);
 
     eqint(0, pcaio_await(t));

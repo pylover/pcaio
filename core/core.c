@@ -1,10 +1,14 @@
 /* standard */
 #include <stdlib.h>
+#include <stdarg.h>
 #include <errno.h>
 
 /* system */
 /* thirdparty */
 #include <cutest.h>
+
+/* local private */
+#include "task.h"
 
 /* local public */
 #include "pcaio/core.h"
@@ -36,16 +40,51 @@ pcaio_free(struct pcaio *p) {
 }
 
 
+int
+pcaio_schedule(struct pcaio *p, struct pcaio_task *t) {
+
+    /* TODO: inject the task into the ring */
+    return -1;
+}
+
+
 struct pcaio_task *
-pcaio_spawn(struct pcaio *p, pcaio_taskentry_t entry, int argc, ...) {
-    // TODO: implement
-    return NULL;
+pcaio_spawn(struct pcaio *p, const char *id, pcaio_entrypoint_t func,
+        int argc, ...) {
+    va_list args;
+    struct pcaio_task *t;
+
+    if (p == NULL) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    /* create a new task*/
+    va_start(args, argc);
+    t = task_new(id, func, argc, args);
+    va_end(args);
+
+    if (t == NULL) {
+        return NULL;
+    }
+
+    if (task_createcontext(&p->uctx, t, p->task_stacksize)) {
+        task_dispose(t);
+        return NULL;
+    }
+
+    if (pcaio_schedule(p, t) != -1)  {
+        task_dispose(t);
+        return NULL;
+    }
+
+    return t;
 }
 
 
 int
-pcaio_await(struct pcaio_task *task) {
-    if (task == NULL) {
+pcaio_await(struct pcaio_task *t) {
+    if (t == NULL) {
         errno = EINVAL;
         return -1;
     }
