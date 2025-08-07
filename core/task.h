@@ -10,7 +10,8 @@ task_new(const char *id, pcaio_entrypoint_t func, int argc, va_list args);
 
 
 int
-task_createcontext(ucontext_t *parent, struct pcaio_task *t, size_t size);
+task_createcontext(struct pcaio_task *t, struct ucontext_t *parent,
+        size_t size);
 
 
 int

@@ -13,17 +13,25 @@
 /* local public */
 #include "pcaio/core.h"
 
-/* local private */
+
+static const struct pcaio_config _defaultconfig = {
+    .taskqueue_size = 16,
+    .taskstack_size = 2048,
+};
 
 
 struct pcaio *
-pcaio_new() {
+pcaio_new(const struct pcaio_config *config) {
     struct pcaio *p;
+    if (config == NULL) {
+        config = &_defaultconfig;
+    }
 
     p = malloc(sizeof(struct pcaio));
     if (p == NULL) {
         return NULL;
     }
+    p->config = config;
 
     return p;
 }
@@ -68,7 +76,7 @@ pcaio_spawn(struct pcaio *p, const char *id, pcaio_entrypoint_t func,
         return NULL;
     }
 
-    if (task_createcontext(&p->uctx, t, p->task_stacksize)) {
+    if (task_createcontext(t, &p->uctx, p->config->taskstack_size)) {
         task_dispose(t);
         return NULL;
     }

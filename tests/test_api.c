@@ -20,7 +20,7 @@ test_api() {
     struct pcaio *p;
     struct pcaio_task *t;
 
-    p = pcaio_new();
+    p = pcaio_new(NULL);
     isnotnull(p);
 
     t = pcaio_spawn(p, "worker#1", worker, 2, "foo", "bar");

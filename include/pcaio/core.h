@@ -17,15 +17,23 @@ struct pcaio_task {
 };
 
 
+/* this structure must be filled by user */
+struct pcaio_config {
+    size_t taskqueue_size;
+    size_t taskstack_size;
+};
+
+
 /* this structure is not thread-safe */
 struct pcaio {
+    const struct pcaio_config *config;
     struct ucontext_t uctx;
-    size_t task_stacksize;
+    struct pcaio_task *queue;
 };
 
 
 struct pcaio *
-pcaio_new();
+pcaio_new(const struct pcaio_config *config);
 
 
 int
