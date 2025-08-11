@@ -16,28 +16,36 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
+/* queueT common definitions */
 #ifndef PCAIO_QUEUET_H_
 
+
 /* generic stuff (must included once) */
-#define queueT_NAME_PASTER(x, y) x ## y
-#define queueT_NAME_EVALUATOR(x, y)  queueT_NAME_PASTER(x, y)
-#define queueT_NAME(n) queueT_NAME_EVALUATOR(queueT, n)
+#define QUEUET_NAME_PASTER(x, y) x ## y
+#define QUEUET_NAME_EVALUATOR(x, y)  QUEUET_NAME_PASTER(x, y)
+#define QUEUET_NAME(n) QUEUET_NAME_EVALUATOR(queue_t, n)
+
+
+/* helper macros */
+#define QUEUET_COUNT(q) ((q->tail - q->head) & q->mask)
+#define QUEUET_AVAIL(q) ((q->head - q->tail - 1) & q->mask)
+
 
 #endif  // PCAIO_QUEUET_H_
 
 
 /* generic<template> definitions */
-struct queueT_NAME(queue) {
+struct QUEUET_NAME(queue) {
     unsigned char mask;
     int head;
     int tail;
-    queueT blob[];
+    queue_t blob[];
 };
 
 
-struct queueT_NAME(queue) *
-queueT_NAME(queue_create) (unsigned char bits);
+struct QUEUET_NAME(queue) *
+QUEUET_NAME(queue_create) (unsigned char bits);
 
 
 int
-queueT_NAME(queue_dispose) (struct queueT_NAME(queue) *);
+QUEUET_NAME(queue_dispose) (struct QUEUET_NAME(queue) *);
