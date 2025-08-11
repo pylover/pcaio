@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <errno.h>
+#include <ucontext.h>
 
 /* system */
 /* thirdparty */
@@ -14,9 +15,17 @@
 #include "pcaio/core.h"
 
 
+struct pcaio {
+    const struct pcaio_config *config;
+    struct ucontext_t uctx;
+    struct taskqueue *tasks;
+};
+
+
+
 static const struct pcaio_config _defaultconfig = {
     .taskqueue_size = 16,
-    .taskstack_size = 2048,
+    .task_stacksize = 2048,
 };
 
 
@@ -50,9 +59,7 @@ pcaio_free(struct pcaio *p) {
 
 int
 pcaio_schedule(struct pcaio *p, struct pcaio_task *t) {
-
-    /* TODO: inject the task into the ring */
-    return -1;
+    return taskqueue_push(p->tasks, t);
 }
 
 
@@ -76,7 +83,7 @@ pcaio_spawn(struct pcaio *p, const char *id, pcaio_entrypoint_t func,
         return NULL;
     }
 
-    if (task_createcontext(t, &p->uctx, p->config->taskstack_size)) {
+    if (task_createcontext(t, &p->uctx, p->config->task_stacksize)) {
         task_dispose(t);
         return NULL;
     }

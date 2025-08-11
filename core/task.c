@@ -7,6 +7,11 @@
 #include <clog.h>
 
 /* local private */
+#include "task.h"
+#undef queue_t
+#define queue_t task
+#include "pcaio/queueT.c"
+
 /* local public */
 #include "pcaio/core.h"
 

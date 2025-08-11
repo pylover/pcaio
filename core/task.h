@@ -2,7 +2,26 @@
 #define CORE_TASK_H_
 
 
+/* standard */
+#include <ucontext.h>
+
+/* local private */
+typedef struct pcaio_task * task;
+#undef queue_t
+#define queue_t task
+#include "pcaio/queueT.h"
+
+/* local public */
 #include "pcaio/core.h"
+
+
+struct pcaio_task {
+    const char *id;
+    struct ucontext_t uctx;
+    pcaio_entrypoint_t func;
+    int argc;
+    void *argv[];
+};
 
 
 struct pcaio_task *
