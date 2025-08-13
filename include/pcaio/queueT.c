@@ -30,10 +30,11 @@ QUEUET_NAME(queue_create) (unsigned char bits) {
  * slots. and -1 if queue is full.
  */
 int
-QUEUET_NAME(queue_push) (struct QUEUET_NAME(queue) *q, queue_t v) {
-    int avail = QUEUET_AVAIL(q);
+QUEUET_NAME(queue_push) (struct QUEUET_NAME(queue) *q, queue_t v,
+        int reserved) {
+    int avail = QUEUET_AVAIL(q) - reserved;
 
-    if (avail == 0) {
+    if (avail < 1) {
         return -1;
     }
 
@@ -45,14 +46,19 @@ QUEUET_NAME(queue_push) (struct QUEUET_NAME(queue) *q, queue_t v) {
 
 /** pop an item from the queue's head.
  *
- * return the count of items inside the que and -1 if queue is empty.
+ * return the count of items inside the queue and -1 on error.
  */
 int
 QUEUET_NAME(queue_pop) (struct QUEUET_NAME(queue) *q, queue_t *out) {
-    int count = QUEUET_COUNT(q);
+    int count;
 
-    if (count == 0) {
+    if (out == NULL) {
         return -1;
+    }
+
+    count = QUEUET_COUNT(q);
+    if (count == 0) {
+        return 0;
     }
 
     *out = q->blob[q->head];

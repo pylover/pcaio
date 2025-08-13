@@ -26,7 +26,7 @@ struct pointerbag {
 
 
 static void
-_main(int first, int second) {
+_taskmain(int first, int second) {
     int status;
     struct pointerbag bag = {first, second};
     struct pcaio_task *t = *(struct pcaio_task **)&bag;
@@ -68,13 +68,13 @@ task_new(const char *id, pcaio_entrypoint_t func, int argc, va_list args) {
     }
 
     /* hollaaaa */
+    t->status = TS_NEW;
     return t;
 }
 
 
 int
-task_createcontext(struct pcaio_task *t, struct ucontext_t *parent,
-        size_t size) {
+task_createcontext(struct pcaio_task *t, size_t size) {
     void *stack;
     struct pointerbag *bag = (struct pointerbag *)t;
 
@@ -84,7 +84,7 @@ task_createcontext(struct pcaio_task *t, struct ucontext_t *parent,
     }
 
     /* copy he current context */
-    if (getcontext(&t->uctx) != 0) {
+    if (getcontext(&t->context) != 0) {
         return -1;
     }
 
@@ -94,14 +94,12 @@ task_createcontext(struct pcaio_task *t, struct ucontext_t *parent,
         free(t);
         return -1;
     }
-    t->uctx.uc_stack.ss_sp = stack;
-    t->uctx.uc_stack.ss_size = size;
-
-    /* successor context */
-    t->uctx.uc_link = parent;
+    t->context.uc_stack.ss_sp = stack;
+    t->context.uc_stack.ss_size = size;
 
     /* create the actual ucontext */
-    makecontext(&t->uctx, (void (*)(void))_main, 2, bag->first, bag->second);
+    makecontext(&t->context, (void (*)(void))_taskmain, 2, bag->first,
+            bag->second);
 
     return 0;
 }
@@ -109,6 +107,13 @@ task_createcontext(struct pcaio_task *t, struct ucontext_t *parent,
 
 int
 task_dispose(struct pcaio_task *t) {
-    // TODO: implement
-    return -1;
+    if (t == NULL) {
+        return -1;
+    }
+
+    if (t->context.uc_stack.ss_sp) {
+        free(t->context.uc_stack.ss_sp);
+    }
+    free(t);
+    return 0;
 }

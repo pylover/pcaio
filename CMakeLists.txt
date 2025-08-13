@@ -37,6 +37,7 @@ include_directories(include)
 add_subdirectory(core)
 add_library(pcaio SHARED
   $<TARGET_OBJECTS:task>
+  $<TARGET_OBJECTS:worker>
   $<TARGET_OBJECTS:core>
 )
 

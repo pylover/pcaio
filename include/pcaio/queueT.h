@@ -52,7 +52,8 @@ QUEUET_NAME(queue_dispose) (struct QUEUET_NAME(queue) *);
 
 
 int
-QUEUET_NAME(queue_push) (struct QUEUET_NAME(queue) *q, queue_t v);
+QUEUET_NAME(queue_push) (struct QUEUET_NAME(queue) *q, queue_t v,
+        int reserved);
 
 
 int

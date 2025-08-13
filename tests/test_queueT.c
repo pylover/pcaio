@@ -24,7 +24,7 @@ test_queueT() {
     eqint(0, q->tail);
 
     /* let's play with the Sheldon Cooper's favorite number. */
-    eqint(6, intqueue_push(q, 73));
+    eqint(6, intqueue_push(q, 73, 0));
     eqint(0, intqueue_pop(q, &out));
     eqint(73, out);
     eqint(1, q->head);
@@ -33,7 +33,7 @@ test_queueT() {
     eqint(7, QUEUET_AVAIL(q));
 
     for (int i = 1; i < 0xF; i++) {
-        eqint(QUEUET_AVAIL(q), intqueue_push(q, i));
+        eqint(QUEUET_AVAIL(q), intqueue_push(q, i, 0));
         eqint(0, intqueue_pop(q, &out));
         eqint(i, out);
     }

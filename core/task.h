@@ -15,9 +15,18 @@ typedef struct pcaio_task * task;
 #include "pcaio/core.h"
 
 
+enum taskstatus {
+    TS_NEW,
+    TS_SCHEDULED,
+    TS_WAITING,
+    TS_TERMINATING,
+};
+
+
 struct pcaio_task {
     const char *id;
-    struct ucontext_t uctx;
+    struct ucontext_t context;
+    enum taskstatus status;
     pcaio_entrypoint_t func;
     int argc;
     void *argv[];
@@ -29,8 +38,7 @@ task_new(const char *id, pcaio_entrypoint_t func, int argc, va_list args);
 
 
 int
-task_createcontext(struct pcaio_task *t, struct ucontext_t *parent,
-        size_t size);
+task_createcontext(struct pcaio_task *t, size_t size);
 
 
 int

@@ -7,9 +7,11 @@
 /* system */
 /* thirdparty */
 #include <cutest.h>
+#include <clog.h>
 
 /* local private */
 #include "task.h"
+#include "worker.h"
 
 /* local public */
 #include "pcaio/core.h"
@@ -17,10 +19,8 @@
 
 struct pcaio {
     const struct pcaio_config *config;
-    struct ucontext_t uctx;
     struct taskqueue *tasks;
 };
-
 
 
 static const struct pcaio_config _defaultconfig = {
@@ -57,12 +57,6 @@ pcaio_free(struct pcaio *p) {
 }
 
 
-int
-pcaio_schedule(struct pcaio *p, struct pcaio_task *t) {
-    return taskqueue_push(p->tasks, t);
-}
-
-
 struct pcaio_task *
 pcaio_spawn(struct pcaio *p, const char *id, pcaio_entrypoint_t func,
         int argc, ...) {
@@ -83,7 +77,7 @@ pcaio_spawn(struct pcaio *p, const char *id, pcaio_entrypoint_t func,
         return NULL;
     }
 
-    if (task_createcontext(t, &p->uctx, p->config->task_stacksize)) {
+    if (task_createcontext(t, p->config->task_stacksize)) {
         task_dispose(t);
         return NULL;
     }
@@ -106,4 +100,74 @@ pcaio_await(struct pcaio_task *t) {
 
     // TODO: implement
     return -1;
+}
+
+
+static int
+_stepforward(struct pcaio_task *task) {
+    struct worker *worker = threadlocalworker_get();
+
+    /* delete this condition later, to increase the performance */
+    if (worker->currenttask) {
+        FATAL("worker->task is not NULL!");
+    }
+
+    worker->currenttask = task;
+    task->context.uc_link = &worker->maincontext;;
+    if (swapcontext(&worker->maincontext, &task->context)) {
+        FATAL("swapcontext");
+    }
+
+    if (task->status == TS_TERMINATING) {
+        if (task_dispose(task)) {
+            FATAL("task_dispose");
+        }
+
+        return 1;
+    }
+
+    return 0;
+}
+
+
+int
+pcaio_schedule(struct pcaio *p, struct pcaio_task *t) {
+    int avail;
+
+    // FIXME: thread-safe push
+    avail = taskqueue_push(p->tasks, t, (int)p->config->workers);
+    if (avail == -1) {
+        return -1;
+    }
+
+    t->status = TS_SCHEDULED;
+    return 0;
+}
+
+
+int
+pcaio_loop(struct pcaio *p) {
+    struct pcaio_task *task;
+
+    // FIXME: thread-safe pop
+    while (taskqueue_pop(p->tasks, &task) > 0) {
+        if (_stepforward(task)) {
+            /* task is terminated and disposed. so, do not schedule it again
+             * and continue to pop the next task to execute */
+            continue;
+        }
+
+        pcaio_schedule(p, task);
+    }
+
+    return 0;
+}
+
+
+int
+pcaio(struct pcaio *p) {
+    struct worker *worker = worker_create();
+    threadlocalworker_set(worker);
+
+    return pcaio_loop(p);
 }

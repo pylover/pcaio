@@ -1,4 +1,5 @@
 add_library(task OBJECT task.c task.h)
+add_library(worker OBJECT worker.c worker.h)
 add_library(core OBJECT core.c)
 
 set(CONFIG_PCAIO_STACKSIZE_MAX 32768)

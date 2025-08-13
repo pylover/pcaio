@@ -11,6 +11,7 @@ typedef int (*pcaio_entrypoint_t) (int argc, void *argv[]);
 struct pcaio_config {
     size_t taskqueue_size;
     size_t task_stacksize;
+    unsigned char workers;
 };
 
 
@@ -33,6 +34,14 @@ pcaio_spawn(struct pcaio *p, const char *id, pcaio_entrypoint_t func,
 
 int
 pcaio_await(struct pcaio_task *task);
+
+
+int
+pcaio_loop(struct pcaio *p);
+
+
+void
+pcaio_imok();
 
 
 #endif  // PCAIO_H_
