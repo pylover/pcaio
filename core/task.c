@@ -3,6 +3,8 @@
 #include <errno.h>
 
 /* system */
+#include <sys/resource.h>
+
 /* thirdparty */
 #include <clog.h>
 
@@ -13,7 +15,7 @@
 #include "pcaio/queueT.c"
 
 /* local public */
-#include "pcaio/core.h"
+#include "pcaio/pcaio.h"
 
 /* local private */
 #include "config.h"
@@ -32,8 +34,9 @@ _taskmain(struct pcaio_task *t) {
 
 
 struct pcaio_task *
-task_new(const char *id, pcaio_entrypoint_t func, int argc, va_list args) {
+task_vnew(const char *id, pcaio_entrypoint_t func, int argc, va_list args) {
     struct pcaio_task *t;
+    size_t allocsize;
 
     /* validate arguments */
     if ((id == NULL) || (func == NULL)) {
@@ -42,10 +45,14 @@ task_new(const char *id, pcaio_entrypoint_t func, int argc, va_list args) {
     }
 
     /* allocate mem for task */
-    t = malloc(sizeof(struct pcaio_task) + argc * sizeof(void *));
+    allocsize = sizeof(struct pcaio_task) + argc * sizeof(void *);
+    t = malloc(allocsize);
     if (t == NULL) {
         return NULL;
     }
+
+    /* zero it */
+    memset(t, 0, allocsize);
 
     /* store the id */
     t->id = id;
@@ -61,21 +68,17 @@ task_new(const char *id, pcaio_entrypoint_t func, int argc, va_list args) {
     }
 
     /* hollaaaa */
-    t->status = TS_IDLE;
+    t->status = TS_NAIVE;
+    t->stacksize = CONFIG_PCAIO_STACKSIZE_DEFAULT;
     return t;
 }
 
 
+/** allocate stack and create a dedicated ucontext for the task.
+ */
 int
-task_createcontext(struct pcaio_task *t, struct ucontext_t *maincontext,
-        size_t size) {
+task_createcontext(struct pcaio_task *t, ucontext_t *successor) {
     void *stack;
-    // struct pointerbag *bag = (struct pointerbag *)t;
-
-    if ((size == 0) || (size > CONFIG_PCAIO_STACKSIZE_MAX)) {
-        errno = EINVAL;
-        return -1;
-    }
 
     /* copy he current context */
     if (getcontext(&t->context) != 0) {
@@ -83,14 +86,15 @@ task_createcontext(struct pcaio_task *t, struct ucontext_t *maincontext,
     }
 
     /* allocate mem for stack */
-    stack = malloc(size);
+    stack = malloc(t->stacksize);
     if (stack == NULL) {
         free(t);
         return -1;
     }
+    memset(stack, 0, t->stacksize);
     t->context.uc_stack.ss_sp = stack;
-    t->context.uc_stack.ss_size = size;
-    t->context.uc_link = maincontext;
+    t->context.uc_stack.ss_size = t->stacksize;
+    t->context.uc_link = successor;
 
     /* create the actual ucontext */
     /* On architectures where int and pointer types are the same size
@@ -102,14 +106,16 @@ task_createcontext(struct pcaio_task *t, struct ucontext_t *maincontext,
      * glibc 2.8, glibc makes some changes to makecontext(), to permit this on
      * some 64-bit architectures (e.g., x86-64).
      * */
+    // TODO: glibc >= 2.8 test macros
     makecontext(&t->context, (void (*)(void))_taskmain, 1, t);
 
+    t->status = TS_ARTFUL;
     return 0;
 }
 
 
 int
-task_dispose(struct pcaio_task *t) {
+task_free(struct pcaio_task *t) {
     if (t == NULL) {
         return -1;
     }

@@ -4,9 +4,6 @@
 #include <cutest.h>
 
 /* local public */
-#include "pcaio/core.h"
-
-
 #undef queue_t
 #define queue_t int
 #include "pcaio/queueT.h"

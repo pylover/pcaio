@@ -5,6 +5,9 @@
 /* standard */
 #include <ucontext.h>
 
+/* local public */
+// #include "pcaio/core.h"
+
 
 typedef struct worker {
     struct pcaio *pcaio;
@@ -15,15 +18,19 @@ typedef struct worker {
 
 #undef TL
 #define TL worker
-#include "pcaio/threadlocal.h"
+#include "pcaio/threadlocalT.h"
 
 
 struct worker *
-worker_create();
+worker_new();
 
 
 int
-worker_destroy(struct worker *worker);
+worker_free(struct worker *w);
+
+
+int
+worker_loop(struct worker *w);
 
 
 #endif  // CORE_WORKER_H_

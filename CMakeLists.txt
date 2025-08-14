@@ -44,7 +44,14 @@ add_library(pcaio SHARED
 
 # Install
 install(TARGETS pcaio DESTINATION "lib")
-install(FILES include/pcaio/core.h DESTINATION "include/pcaio")
+install(FILES 
+  include/pcaio/pcaio.h 
+  include/pcaio/queueT.h 
+  include/pcaio/queueT.c 
+  include/pcaio/threadlocalT.h 
+  include/pcaio/threadlocalT.c 
+  DESTINATION "include/pcaio"
+)
 
 
 # Uninstall

@@ -12,11 +12,12 @@ typedef struct pcaio_task * task;
 #include "pcaio/queueT.h"
 
 /* local public */
-#include "pcaio/core.h"
+#include "pcaio/pcaio.h"
 
 
 enum taskstatus {
-    TS_IDLE,
+    TS_NAIVE,
+    TS_ARTFUL,
     TS_RELAXING,
     TS_TERMINATING,
 };
@@ -24,6 +25,7 @@ enum taskstatus {
 
 struct pcaio_task {
     const char *id;
+    size_t stacksize;
     struct ucontext_t context;
     enum taskstatus status;
     pcaio_entrypoint_t func;
@@ -33,16 +35,15 @@ struct pcaio_task {
 
 
 struct pcaio_task *
-task_new(const char *id, pcaio_entrypoint_t func, int argc, va_list args);
+task_vnew(const char *id, pcaio_entrypoint_t func, int argc, va_list args);
 
 
 int
-task_createcontext(struct pcaio_task *t, struct ucontext_t *maincontext,
-        size_t size);
+task_createcontext(struct pcaio_task *t, ucontext_t *successor);
 
 
 int
-task_dispose(struct pcaio_task *t);
+task_free(struct pcaio_task *t);
 
 
 #endif  // CORE_TASK_H_

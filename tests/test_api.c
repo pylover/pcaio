@@ -5,9 +5,7 @@
 #include <clog.h>
 
 /* local public */
-#include "pcaio/core.h"
-
-/* local private */
+#include "pcaio/pcaio.h"
 
 
 int hits = 0;
@@ -33,16 +31,19 @@ worker(int argc, char *argv[]) {
 
 void
 test_api() {
+    struct pcaio_task *t;
     struct pcaio *p;
 
     p = pcaio_new(NULL);
     isnotnull(p);
 
-    isnotnull(pcaio_task("w #1", (pcaio_entrypoint_t)worker, 1, "foo"));
-    isnotnull(pcaio_task("w #2", (pcaio_entrypoint_t)worker, 1, "thud"));
+    t = pcaio_task_new("w #1", (pcaio_entrypoint_t)worker, 1, "foo");
+    isnotnull(t);
+    eqint(0, pcaio_task_schedule(t));
+    isnotnull(pcaio_schedule("w #2", (pcaio_entrypoint_t)worker, 1, "thud"));
 
-    eqint(0, pcaio(p));
-    eqint(0, pcaio_free(p));
+    eqint(0, pcaio());
+    eqint(0, pcaio_free());
     eqint(6, hits);
     eqint(3, logs[0]);
     eqint(4, logs[1]);

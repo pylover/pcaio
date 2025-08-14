@@ -1,5 +1,5 @@
-#ifndef CORE_THREADLOCAL_H_
-#define CORE_THREADLOCAL_H_
+#ifndef CORE_THREADLOCALT_H_
+#define CORE_THREADLOCALT_H_
 
 
 /* generic stuff (must included once) */
@@ -13,7 +13,7 @@
 #define TL_TYPE() TL_NAME_EVALUATOR2(TL, _t)
 
 
-#endif  // CORE_THREADLOCAL_H_
+#endif  // CORE_THREADLOCALT_H_
 
 
 void
