@@ -5,9 +5,6 @@
 /* standard */
 #include <ucontext.h>
 
-/* local public */
-// #include "pcaio/core.h"
-
 
 typedef struct worker {
     struct pcaio *pcaio;

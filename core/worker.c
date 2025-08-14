@@ -1,8 +1,5 @@
 /* standard */
 #include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <ucontext.h>
 
 /* thirdparty */
 #include <clog.h>

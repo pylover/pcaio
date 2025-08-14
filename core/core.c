@@ -1,10 +1,8 @@
 /* standard */
 #include <stdlib.h>
 #include <stdarg.h>
-#include <errno.h>
 #include <ucontext.h>
 
-/* system */
 /* thirdparty */
 #include <cutest.h>
 #include <clog.h>

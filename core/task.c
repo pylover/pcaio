@@ -2,13 +2,11 @@
 #include <stdlib.h>
 #include <errno.h>
 
-/* system */
-#include <sys/resource.h>
-
 /* thirdparty */
 #include <clog.h>
 
 /* local private */
+#include "config.h"
 #include "task.h"
 #undef queue_t
 #define queue_t task
@@ -16,9 +14,6 @@
 
 /* local public */
 #include "pcaio/pcaio.h"
-
-/* local private */
-#include "config.h"
 
 
 static void
