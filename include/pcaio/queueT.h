@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-/* queueT common definitions */
-#ifndef PCAIO_QUEUET_H_
+#ifndef INCLUDE_PCAIO_QUEUET_H_
+#define INCLUDE_PCAIO_QUEUET_H_
 
 
 /* generic stuff (must included once) */
@@ -31,7 +31,7 @@
 #define QUEUET_AVAIL(q) ((q->head - q->tail - 1) & q->mask)
 
 
-#endif  // PCAIO_QUEUET_H_
+#endif  // INCLUDE_PCAIO_QUEUET_H_
 
 
 /* generic<template> definitions */
