@@ -23,13 +23,8 @@ int
 pcaio_free(struct pcaio *p);
 
 
-int
-pcaio_schedule(struct pcaio *p, struct pcaio_task *t);
-
-
 struct pcaio_task *
-pcaio_spawn(struct pcaio *p, const char *id, pcaio_entrypoint_t func,
-        int argc, ...);
+pcaio_task(const char *id, pcaio_entrypoint_t func, int argc, ...);
 
 
 int
@@ -40,8 +35,16 @@ int
 pcaio_loop(struct pcaio *p);
 
 
+int
+pcaio_task_schedule(struct pcaio_task *t);
+
+
 void
-pcaio_imok();
+pcaio_task_relax();
+
+
+int
+pcaio(struct pcaio *p);
 
 
 #endif  // PCAIO_H_

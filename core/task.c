@@ -19,17 +19,9 @@
 #include "config.h"
 
 
-struct pointerbag {
-    int first;
-    int second;
-};
-
-
 static void
-_taskmain(int first, int second) {
+_taskmain(struct pcaio_task *t) {
     int status;
-    struct pointerbag bag = {first, second};
-    struct pcaio_task *t = *(struct pcaio_task **)&bag;
 
     status = t->func(t->argc, t->argv);
     if (status) {
@@ -68,7 +60,7 @@ task_new(const char *id, pcaio_entrypoint_t func, int argc, va_list args) {
     }
 
     /* hollaaaa */
-    t->status = TS_NEW;
+    t->status = TS_IDLE;
     return t;
 }
 
@@ -76,7 +68,7 @@ task_new(const char *id, pcaio_entrypoint_t func, int argc, va_list args) {
 int
 task_createcontext(struct pcaio_task *t, size_t size) {
     void *stack;
-    struct pointerbag *bag = (struct pointerbag *)t;
+    // struct pointerbag *bag = (struct pointerbag *)t;
 
     if ((size == 0) || (size > CONFIG_PCAIO_STACKSIZE_MAX)) {
         errno = EINVAL;
@@ -98,8 +90,16 @@ task_createcontext(struct pcaio_task *t, size_t size) {
     t->context.uc_stack.ss_size = size;
 
     /* create the actual ucontext */
-    makecontext(&t->context, (void (*)(void))_taskmain, 2, bag->first,
-            bag->second);
+    /* On architectures where int and pointer types are the same size
+     * (e.g., x86-32, where both types are 32 bits), you may be able to get
+     * away with passing pointers as arguments to makecontext() following
+     * argc. However, doing this is not guaranteed to be portable, is
+     * undefined according to the standards, and won't work on architectures
+     * where pointers are larger than ints. Nevertheless, starting with
+     * glibc 2.8, glibc makes some changes to makecontext(), to permit this on
+     * some 64-bit architectures (e.g., x86-64).
+     * */
+    makecontext(&t->context, (void (*)(void))_taskmain, 1, t);
 
     return 0;
 }

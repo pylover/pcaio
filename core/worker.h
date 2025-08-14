@@ -7,6 +7,7 @@
 
 
 typedef struct worker {
+    struct pcaio *pcaio;
     struct ucontext_t maincontext;
     struct pcaio_task *currenttask;
 } worker_t;

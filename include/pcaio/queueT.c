@@ -58,7 +58,7 @@ QUEUET_NAME(queue_pop) (struct QUEUET_NAME(queue) *q, queue_t *out) {
 
     count = QUEUET_COUNT(q);
     if (count == 0) {
-        return 0;
+        return -1;
     }
 
     *out = q->blob[q->head];

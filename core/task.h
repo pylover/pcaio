@@ -16,9 +16,8 @@ typedef struct pcaio_task * task;
 
 
 enum taskstatus {
-    TS_NEW,
-    TS_SCHEDULED,
-    TS_WAITING,
+    TS_IDLE,
+    TS_RELAXING,
     TS_TERMINATING,
 };
 
