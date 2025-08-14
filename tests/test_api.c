@@ -2,6 +2,7 @@
 /* system */
 /* thirdparty */
 #include <cutest.h>
+#include <clog.h>
 
 /* local public */
 #include "pcaio/core.h"
@@ -9,20 +10,23 @@
 /* local private */
 
 
-static volatile int ret = 0;
+int hits = 0;
+int logs[6];
 
 
 int
-worker(int argc, void *argv[]) {
-    int i;
+worker(int argc, char *argv[]) {
+    int i = strlen(argv[0]);
 
-    i = 4;
+    logs[hits++] = i;
     pcaio_task_relax();
 
     i *= 3;
+    logs[hits++] = i;
     pcaio_task_relax();
 
-    ret = i;
+    i += 7;
+    logs[hits++] = i;
     return i;
 }
 
@@ -30,17 +34,22 @@ worker(int argc, void *argv[]) {
 void
 test_api() {
     struct pcaio *p;
-    struct pcaio_task *t;
 
     p = pcaio_new(NULL);
     isnotnull(p);
 
-    t = pcaio_task("worker#1", worker, 2, "foo", "bar");
-    isnotnull(t);
+    isnotnull(pcaio_task("w #1", (pcaio_entrypoint_t)worker, 1, "foo"));
+    isnotnull(pcaio_task("w #2", (pcaio_entrypoint_t)worker, 1, "thud"));
 
     eqint(0, pcaio(p));
     eqint(0, pcaio_free(p));
-    eqint(12, ret);
+    eqint(6, hits);
+    eqint(3, logs[0]);
+    eqint(4, logs[1]);
+    eqint(9, logs[2]);
+    eqint(12, logs[3]);
+    eqint(16, logs[4]);
+    eqint(19, logs[5]);
 }
 
 

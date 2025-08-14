@@ -1,5 +1,6 @@
 /* standard */
 #include <stdlib.h>
+#include <string.h>
 #include <ucontext.h>
 
 /* local private */
@@ -18,7 +19,7 @@ worker_create() {
         return NULL;
     }
 
-    // TODO: backup context?
+    memset(w, 0, sizeof(struct worker));
     return w;
 }
 

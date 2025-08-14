@@ -27,6 +27,7 @@ _taskmain(struct pcaio_task *t) {
     if (status) {
         ERROR("task %s exited with status: %d", t->id, status);
     }
+    t->status = TS_TERMINATING;
 }
 
 
@@ -66,7 +67,8 @@ task_new(const char *id, pcaio_entrypoint_t func, int argc, va_list args) {
 
 
 int
-task_createcontext(struct pcaio_task *t, size_t size) {
+task_createcontext(struct pcaio_task *t, struct ucontext_t *maincontext,
+        size_t size) {
     void *stack;
     // struct pointerbag *bag = (struct pointerbag *)t;
 
@@ -88,6 +90,7 @@ task_createcontext(struct pcaio_task *t, size_t size) {
     }
     t->context.uc_stack.ss_sp = stack;
     t->context.uc_stack.ss_size = size;
+    t->context.uc_link = maincontext;
 
     /* create the actual ucontext */
     /* On architectures where int and pointer types are the same size

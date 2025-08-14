@@ -26,7 +26,7 @@ struct pcaio {
 
 static const struct pcaio_config _defaultconfig = {
     .taskqueue_size = 16,
-    .task_stacksize = 2048,
+    .task_stacksize = 16384,
 };
 
 
@@ -82,7 +82,8 @@ pcaio_task(const char *id, pcaio_entrypoint_t func,
         int argc, ...) {
     va_list args;
     struct pcaio_task *t;
-    struct pcaio *p = threadlocalworker_get()->pcaio;
+    struct worker *worker = threadlocalworker_get();
+    struct pcaio *p = worker->pcaio;
 
     if (p == NULL) {
         errno = EINVAL;
@@ -98,7 +99,9 @@ pcaio_task(const char *id, pcaio_entrypoint_t func,
         return NULL;
     }
 
-    if (task_createcontext(t, p->config->task_stacksize)) {
+    // FIXME: maincontext must be thread-local
+    if (task_createcontext(t, &worker->maincontext,
+                p->config->task_stacksize)) {
         task_dispose(t);
         return NULL;
     }
@@ -112,29 +115,18 @@ pcaio_task(const char *id, pcaio_entrypoint_t func,
 }
 
 
-int
-pcaio_await(struct pcaio_task *t) {
-    if (t == NULL) {
-        errno = EINVAL;
-        return -1;
-    }
-
-    // TODO: implement
-    return -1;
-}
-
-
 static int
 _stepforward(struct pcaio_task *task) {
     struct worker *worker = threadlocalworker_get();
 
-    /* delete this condition later, to increase the performance */
-    if (worker->currenttask) {
-        FATAL("worker->task is not NULL!");
-    }
+    // /* delete this condition later, to increase the performance */
+    // if (worker->currenttask) {
+    //     FATAL("worker->task is not NULL!");
+    // }
 
     worker->currenttask = task;
-    task->context.uc_link = &worker->maincontext;
+    asm volatile("": : :"memory");
+
     if (swapcontext(&worker->maincontext, &task->context)) {
         FATAL("swapcontext to task");
     }
@@ -156,10 +148,11 @@ pcaio_task_relax() {
     struct worker *worker = threadlocalworker_get();
     struct pcaio_task *task = worker->currenttask;
 
+    asm volatile("": : :"memory");
     task->status = TS_RELAXING;
-    worker->currenttask = NULL;
+    // worker->currenttask = NULL;
 
-    if (swapcontext(&task->context, &worker->maincontext)) {
+    if (swapcontext(&(task->context), &worker->maincontext)) {
         FATAL("swapcontext to main");
     }
 }
