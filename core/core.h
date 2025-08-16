@@ -21,7 +21,7 @@
 
 
 struct pcaio {
-    const struct pcaio_config *config;
+    struct pcaio_config * config;
     struct taskqueue *tasks;
 };
 

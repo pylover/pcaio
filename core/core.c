@@ -45,12 +45,13 @@ pcaio_config_default() {
     }
 
     c->taskqueue_size = 16;
+    c->workers = 1;
     return c;
 }
 
 
 struct pcaio *
-pcaio_new(const struct pcaio_config *config) {
+pcaio_new(struct pcaio_config *config) {
     struct pcaio *p;
     p = malloc(sizeof(struct pcaio));
     if (p == NULL) {
@@ -152,9 +153,8 @@ void
 pcaio_task_relax() {
     struct worker *worker = threadlocalworker_get();
     struct pcaio_task *task = worker->currenttask;
-
-    asm volatile("": : :"memory");
     task->status = TS_RELAXING;
+    // asm volatile("": : :"memory");
     // worker->currenttask = NULL;
 
     if (swapcontext(&(task->context), &worker->maincontext)) {
@@ -166,5 +166,11 @@ pcaio_task_relax() {
 int
 pcaio() {
     struct worker *w = threadlocalworker_get();
+    struct pcaio *p = w->pcaio;
+    struct pcaio_config *c = p->config;
+
+    for (int i = 1; i < c->workers; i++) {
+        // TODO: create thread
+    }
     return worker_loop(w);
 }

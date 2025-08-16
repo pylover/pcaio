@@ -65,7 +65,7 @@ _stepforward(struct worker *worker, struct pcaio_task *task) {
     }
 
     worker->currenttask = task;
-    asm volatile("": : :"memory");
+    // asm volatile("": : :"memory");
 
     if (swapcontext(&worker->maincontext, &task->context)) {
         FATAL("swapcontext to task");

@@ -33,7 +33,7 @@ struct pcaio_config {
 
 
 struct pcaio *
-pcaio_new(const struct pcaio_config *config);
+pcaio_new(struct pcaio_config *config);
 
 
 int
