@@ -12,6 +12,7 @@ set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fms-extensions")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE=1")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c++11")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -pthread")
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
 
@@ -38,6 +39,7 @@ include_directories(include)
 # core 
 add_subdirectory(core)
 add_library(pcaio SHARED
+  $<TARGET_OBJECTS:thread>
   $<TARGET_OBJECTS:task>
   $<TARGET_OBJECTS:worker>
   $<TARGET_OBJECTS:core>

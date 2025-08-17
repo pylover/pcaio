@@ -172,5 +172,5 @@ pcaio() {
     for (int i = 1; i < c->workers; i++) {
         // TODO: create thread
     }
-    return worker_loop(w);
+    return worker(w);
 }

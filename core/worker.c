@@ -33,29 +33,6 @@
 #include "pcaio/threadlocalT.c"
 
 
-struct worker *
-worker_new() {
-    struct worker *w = malloc(sizeof(struct worker));
-    if (w == NULL) {
-        return NULL;
-    }
-
-    memset(w, 0, sizeof(struct worker));
-    return w;
-}
-
-
-int
-worker_free(struct worker *w) {
-    if (w == NULL) {
-        return -1;
-    }
-
-    free(w);
-    return 0;
-}
-
-
 static int
 _stepforward(struct worker *worker, struct pcaio_task *task) {
     if ((task->status == TS_NAIVE) &&
@@ -83,8 +60,31 @@ _stepforward(struct worker *worker, struct pcaio_task *task) {
 }
 
 
+struct worker *
+worker_new() {
+    struct worker *w = malloc(sizeof(struct worker));
+    if (w == NULL) {
+        return NULL;
+    }
+
+    memset(w, 0, sizeof(struct worker));
+    return w;
+}
+
+
 int
-worker_loop(struct worker *w) {
+worker_free(struct worker *w) {
+    if (w == NULL) {
+        return -1;
+    }
+
+    free(w);
+    return 0;
+}
+
+
+static int
+_loop(struct worker *w) {
     struct taskqueue *tasks = w->pcaio->tasks;
     struct pcaio_task *t;
 
@@ -99,6 +99,20 @@ worker_loop(struct worker *w) {
         // FIXME: thread-safe push
         /* re-schedule the task */
         taskqueue_push(tasks, t, 0);
+    }
+
+    return 0;
+}
+
+
+/** spawns a new thread for the worker's loop.
+ * then immediately returns 0 if enrything was ok. otherwise -1.
+ */
+int
+worker(struct worker *w) {
+    if (thread_new(&w->tid, (thread_start_t)_loop, w)) {
+        ERROR("thread_new");
+        return -1;
     }
 
     return 0;

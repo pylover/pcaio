@@ -46,6 +46,9 @@ QUEUET_NAME(queue_create) (unsigned char bits) {
  *
  * return the count of remaining free
  * slots. and -1 if queue is full.
+ *
+ *
+ * head OOOOO tail
  */
 int
 QUEUET_NAME(queue_push) (struct QUEUET_NAME(queue) *q, queue_t v,

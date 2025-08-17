@@ -16,41 +16,29 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_WORKER_H_
-#define CORE_WORKER_H_
-
-
 /* standard */
-#include <ucontext.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <threads.h>
+
+/* thirdparty */
+#include <clog.h>
 
 /* local private */
 #include "thread.h"
 
 
-typedef struct worker {
-    thread_t tid;
-    // FIXME: move the pcaio to a specific localstorage
-    struct pcaio *pcaio;
-    struct ucontext_t maincontext;
-    struct pcaio_task *currenttask;
-} worker_t;
-
-
-#undef TL
-#define TL worker
-#include "pcaio/threadlocalT.h"
-
-
-struct worker *
-worker_new();
-
-
 int
-worker_free(struct worker *w);
+thread_new(thread_t *tid, thread_start_t f, void *arg) {
+    int status;
 
+    status = thrd_create(tid, f, arg);
+    if (status != thrd_success) {
+        if (status == thrd_nomem) {
+            errno = ENOMEM;
+        }
+        return -1;
+    }
 
-int
-worker(struct worker *w);
-
-
-#endif  // CORE_WORKER_H_
+    return 0;
+}
