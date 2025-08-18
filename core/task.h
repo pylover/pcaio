@@ -24,9 +24,9 @@
 #include <ucontext.h>
 
 /* local private */
-typedef struct pcaio_task * task;
-#undef queue_t
-#define queue_t task
+typedef struct pcaio_task task_t;
+#undef T
+#define T task
 #include "pcaio/queueT.h"
 
 /* local public */
@@ -42,14 +42,20 @@ enum taskstatus {
 
 
 struct pcaio_task {
-    const char *id;
+    /* used by taskqueue */
+    struct pcaio_task *next;
+
     size_t stacksize;
     struct ucontext_t context;
     enum taskstatus status;
+
+    /* provided by the user */
+    const char *id;
     pcaio_entrypoint_t func;
     int argc;
     void *argv[];
 };
+
 
 
 struct pcaio_task *
@@ -62,6 +68,10 @@ task_createcontext(struct pcaio_task *t, ucontext_t *successor);
 
 int
 task_free(struct pcaio_task *t);
+
+
+int
+taskqueue_init(struct taskqueue *q);
 
 
 #endif  // CORE_TASK_H_

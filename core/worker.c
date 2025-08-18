@@ -24,6 +24,7 @@
 
 /* local private */
 #include "core.h"
+#include "task.h"
 #include "worker.h"
 #include "task.h"
 
@@ -85,7 +86,7 @@ worker_free(struct worker *w) {
 
 static int
 _loop(struct worker *w) {
-    struct taskqueue *tasks = w->pcaio->tasks;
+    struct taskqueue *tasks = &w->pcaio->tasks;
     struct pcaio_task *t;
 
     // FIXME: thread-safe pop
@@ -98,7 +99,7 @@ _loop(struct worker *w) {
 
         // FIXME: thread-safe push
         /* re-schedule the task */
-        taskqueue_push(tasks, t, 0);
+        taskqueue_push(tasks, t);
     }
 
     return 0;

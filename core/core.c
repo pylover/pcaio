@@ -22,7 +22,6 @@
 #include <ucontext.h>
 
 /* thirdparty */
-#include <cutest.h>
 #include <clog.h>
 
 /* local private */
@@ -65,7 +64,11 @@ pcaio_new(struct pcaio_config *config) {
         p->config = config;
     }
 
-    p->tasks = taskqueue_create(CONFIG_PCAIO_TASKQUEUE_BITS);
+    if (taskqueue_init(&p->tasks)) {
+        free(p);
+        return NULL;
+    }
+
     struct worker *worker = worker_new();
     worker->pcaio = p;
     threadlocalworker_set(worker);
@@ -88,6 +91,7 @@ pcaio_free() {
         return -1;
     }
 
+    taskqueue_deinit(&p->tasks);
     worker_free(w);
     free(p);
     return 0;
@@ -96,15 +100,11 @@ pcaio_free() {
 
 int
 pcaio_task_schedule(struct pcaio_task *t) {
-    int avail;
-    struct worker *worker = threadlocalworker_get();
-    struct pcaio *p = worker->pcaio;
+    struct worker *w = threadlocalworker_get();
+    struct pcaio *p = w->pcaio;
 
     // FIXME: thread-safe push
-    avail = taskqueue_push(p->tasks, t, (int)p->config->workers);
-    if (avail == -1) {
-        return -1;
-    }
+    taskqueue_push(&p->tasks, t);
 
     return 0;
 }

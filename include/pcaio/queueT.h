@@ -20,43 +20,38 @@
 #define INCLUDE_PCAIO_QUEUET_H_
 
 
+#include "pcaio/mutex.h"
+
+
 /* generic stuff (must included once) */
-#define QUEUET_NAME_PASTER(x, y) x ## y
-#define QUEUET_NAME_EVALUATOR(x, y)  QUEUET_NAME_PASTER(x, y)
-#define QUEUET_NAME(n) QUEUET_NAME_EVALUATOR(queue_t, n)
-
-
-/* helper macros */
-#define QUEUET_COUNT(q) ((q->tail - q->head) & q->mask)
-#define QUEUET_AVAIL(q) ((q->head - q->tail - 1) & q->mask)
+#define QNAME_PASTE(x, y) x ## y
+#define QNAME_EVAL(x, y)  QNAME_PASTE(x, y)
+#define QNAME(n) QNAME_EVAL(T, n)
+#define QELTYP() QNAME(_t)
 
 
 #endif  // INCLUDE_PCAIO_QUEUET_H_
 
 
 /* generic<template> definitions */
-struct QUEUET_NAME(queue) {
-    unsigned char mask;
-    int head;
-    int tail;
-    queue_t blob[];
+struct QNAME(queue) {
+    QELTYP() *head;
+    QELTYP() *tail;
+    mutex_t mutex;
 };
 
 
-struct QUEUET_NAME(queue) *
-QUEUET_NAME(queue_create) (unsigned char bits);
+int
+QNAME(queue_init) (struct QNAME(queue) *q);
+
+
+void
+QNAME(queue_deinit) (struct QNAME(queue) *q);
+
+
+void
+QNAME(queue_push) (struct QNAME(queue) *q, QELTYP() *v);
 
 
 int
-QUEUET_NAME(queue_dispose) (struct QUEUET_NAME(queue) *);
-
-
-int
-QUEUET_NAME(queue_push) (struct QUEUET_NAME(queue) *q, queue_t v,
-        int reserved);
-
-
-int
-QUEUET_NAME(queue_pop) (struct QUEUET_NAME(queue) *q, queue_t *out);
-
-
+QNAME(queue_pop) (struct QNAME(queue) *q, QELTYP() **out);

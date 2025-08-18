@@ -26,8 +26,8 @@
 /* local private */
 #include "config.h"
 #include "task.h"
-#undef queue_t
-#define queue_t task
+#undef T
+#define T task
 #include "pcaio/queueT.c"
 
 /* local public */
@@ -119,7 +119,7 @@ task_createcontext(struct pcaio_task *t, ucontext_t *successor) {
      * glibc 2.8, glibc makes some changes to makecontext(), to permit this on
      * some 64-bit architectures (e.g., x86-64).
      * */
-    // TODO: glibc >= 2.8 test macros
+    // TODO: glibc >= 2.8 test macro
     makecontext(&t->context, (void (*)(void))_taskmain, 1, t);
 
     t->status = TS_ARTFUL;

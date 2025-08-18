@@ -20,9 +20,13 @@
 #define CORE_CORE_H_
 
 
+/* local private */
+#include "task.h"
+
+
 struct pcaio {
     struct pcaio_config * config;
-    struct taskqueue *tasks;
+    struct taskqueue tasks;
 };
 
 

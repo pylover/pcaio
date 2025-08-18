@@ -16,12 +16,31 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_CONFIG_H_IN_
-#define CORE_CONFIG_H_IN_
+#ifndef PCAIO_MUTEX_H_
+#define PCAIO_MUTEX_H_
 
 
-#cmakedefine CONFIG_PCAIO_STACKSIZE_MAX @CONFIG_PCAIO_STACKSIZE_MAX@
-#cmakedefine CONFIG_PCAIO_STACKSIZE_DEFAULT @CONFIG_PCAIO_STACKSIZE_DEFAULT@
+/* standard */
+#include <threads.h>
 
 
-#endif  // CORE_CONFIG_H_IN_
+typedef mtx_t mutex_t;
+
+
+int
+mutex_init(mutex_t *m);
+
+
+void
+mutex_deinit(mutex_t *m);
+
+
+void
+mutex_acquire(mutex_t *m);
+
+
+void
+mutex_release(mutex_t *m);
+
+
+#endif  // PCAIO_MUTEX_H_

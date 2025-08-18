@@ -19,40 +19,68 @@
 /* thirdparty */
 #include <cutest.h>
 
+
+typedef struct foo {
+    int val;
+    struct foo *next;
+} foo_t;
+
 /* local public */
-#undef queue_t
-#define queue_t int
+#undef T
+#define T foo
 #include "pcaio/queueT.h"
 #include "pcaio/queueT.c"
 
 
 void
 test_queueT() {
-    int out;
+    struct fooqueue q;
+    struct foo *out;
+    struct foo foo73 = {73};
+    struct foo foo74 = {74};
+    struct foo foo75 = {75};
 
     /* create */
-    struct intqueue *q = intqueue_create(3);
-    isnotnull(q);
-    eqint(0, q->head);
-    eqint(0, q->tail);
+    eqint(0, fooqueue_init(&q));
+    isnull(q.head);
+    isnull(q.tail);
 
     /* let's play with the Sheldon Cooper's favorite number. */
-    eqint(6, intqueue_push(q, 73, 0));
-    eqint(0, intqueue_pop(q, &out));
-    eqint(73, out);
-    eqint(1, q->head);
-    eqint(1, q->tail);
-    eqint(0, QUEUET_COUNT(q));
-    eqint(7, QUEUET_AVAIL(q));
+    fooqueue_push(&q, &foo73);
+    isnotnull(q.head);
+    isnotnull(q.tail);
+    isnull(foo73.next);
+    eqptr(q.head, q.tail);
+    eqptr(q.head, &foo73);
 
-    for (int i = 1; i < 0xF; i++) {
-        eqint(QUEUET_AVAIL(q), intqueue_push(q, i, 0));
-        eqint(0, intqueue_pop(q, &out));
-        eqint(i, out);
-    }
+    eqint(0, fooqueue_pop(&q, &out));
+    eqint(73, out->val);
+    isnull(q.head);
+    isnull(q.tail);
+    isnull(out->next);
 
+    /* enqueue more than one item */
+    fooqueue_push(&q, &foo73);
+    fooqueue_push(&q, &foo74);
+    fooqueue_push(&q, &foo75);
+    eqptr(q.head, &foo73);
+    eqptr(q.tail, &foo75);
+    eqptr(foo73.next, &foo74);
+    eqptr(foo74.next, &foo75);
+    isnull(foo75.next);
+
+    eqint(0, fooqueue_pop(&q, &out));
+    eqint(73, out->val);
+    eqint(0, fooqueue_pop(&q, &out));
+    eqint(74, out->val);
+    eqint(0, fooqueue_pop(&q, &out));
+    eqint(75, out->val);
+
+    isnull(q.head);
+    isnull(q.tail);
+    isnull(out->next);
     /* freeup */
-    eqint(0, intqueue_dispose(q));
+    fooqueue_deinit(&q);
 }
 
 
