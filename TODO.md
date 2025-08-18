@@ -10,6 +10,3 @@
 - clone(2)
 - namespaces(7)
 - madvise(2)
-
-
-// Copyright 2023 Vahid Mardani -> 2025
