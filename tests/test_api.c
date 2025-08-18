@@ -62,7 +62,7 @@ test_api_advanced() {
     eqint(0, pcaio_task_schedule(t));
 
     hits = 0;
-    memset(logs, 0, sizeof(int) * 6);;
+    memset(logs, 0, sizeof(int) * 6);
     eqint(0, pcaio());
     eqint(0, pcaio_free());
     eqint(6, hits);
@@ -83,7 +83,7 @@ test_api_simple() {
     isnotnull(pcaio_schedule("w #2", (pcaio_entrypoint_t)worker, 1, "thud"));
 
     hits = 0;
-    memset(logs, 0, sizeof(int) * 6);;
+    memset(logs, 0, sizeof(int) * 6);
     eqint(0, pcaio());
     eqint(0, pcaio_free());
     eqint(6, hits);

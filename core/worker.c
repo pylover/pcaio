@@ -26,7 +26,6 @@
 #include "core.h"
 #include "task.h"
 #include "worker.h"
-#include "task.h"
 
 /* local public */
 #undef TL

@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef PCAIO_MUTEX_H_
-#define PCAIO_MUTEX_H_
+#ifndef INCLUDE_PCAIO_MUTEX_H_
+#define INCLUDE_PCAIO_MUTEX_H_
 
 
 /* standard */
@@ -43,4 +43,4 @@ void
 mutex_release(mutex_t *m);
 
 
-#endif  // PCAIO_MUTEX_H_
+#endif  // INCLUDE_PCAIO_MUTEX_H_
