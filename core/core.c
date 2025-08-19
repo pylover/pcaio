@@ -22,6 +22,7 @@
 #include <stdarg.h>
 #include <ucontext.h>
 #include <errno.h>
+#include <signal.h>
 
 /* thirdparty */
 #include <clog.h>
@@ -85,6 +86,7 @@ pcaio_init(struct pcaio_config *config) {
         return -1;
     }
 
+    p->cancel = false;
     _pcaio = p;
     return 0;
 }
@@ -165,11 +167,26 @@ pcaio_task_relax() {
 }
 
 
+static void
+_signal(int sig) {
+    printf("signal received: %d\n", sig);
+    _pcaio->cancel = true;
+}
+
+
 int
 pcaio() {
     if (_pcaio == NULL) {
         errno = EINVAL;
         ERROR("call pcaio_init() once before the %s().", __func__);
+        return -1;
+    }
+
+    struct sigaction sigact;
+    sigact.sa_handler = _signal;
+
+    if (sigaction(SIGINT, &sigact, NULL)) {
+        ERROR("sigaction");
         return -1;
     }
 
@@ -179,11 +196,10 @@ pcaio() {
         return -1;
     }
 
-    DEBUG("watchdog.......");
-    sleep(5);
-    // unsigned int i;
-    // for (;;i++) {
-    // }
+    while (!_pcaio->cancel) {
+        sleep(1);
+    }
 
+    INFO("canceling all workers...");
     return threadpool_cancelall(&_pcaio->pool);
 }

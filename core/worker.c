@@ -105,5 +105,6 @@ worker(atomic_bool *cancel) {
         sleep(1);
     }
 
+    DEBUG("worker: %lu, canceled", tid);
     return -1;
 }

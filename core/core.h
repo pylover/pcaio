@@ -26,6 +26,7 @@
 
 
 struct pcaio {
+    volatile int cancel;
     struct pcaio_config *config;
     struct taskqueue tasks;
     struct threadpool pool;
