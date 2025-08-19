@@ -40,6 +40,7 @@ include_directories(include)
 add_subdirectory(core)
 add_library(pcaio SHARED
   $<TARGET_OBJECTS:thread>
+  $<TARGET_OBJECTS:threadpool>
   $<TARGET_OBJECTS:mutex>
   $<TARGET_OBJECTS:task>
   $<TARGET_OBJECTS:worker>

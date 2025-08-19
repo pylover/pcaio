@@ -48,10 +48,8 @@ worker(int argc, char *argv[]) {
 void
 test_api_advanced() {
     struct pcaio_task *t;
-    struct pcaio *p;
 
-    p = pcaio_new(NULL);
-    isnotnull(p);
+    eqint(0, pcaio_init(NULL));
 
     t = pcaio_task_new("w #1", (pcaio_entrypoint_t)worker, 1, "foo");
     isnotnull(t);
@@ -64,7 +62,7 @@ test_api_advanced() {
     hits = 0;
     memset(logs, 0, sizeof(int) * 6);
     eqint(0, pcaio());
-    eqint(0, pcaio_free());
+    eqint(0, pcaio_deinit());
     eqint(6, hits);
     eqint(3, logs[0]);
     eqint(4, logs[1]);
@@ -77,7 +75,7 @@ test_api_advanced() {
 
 void
 test_api_simple() {
-    pcaio_new(NULL);
+    pcaio_init(NULL);
 
     isnotnull(pcaio_schedule("w #1", (pcaio_entrypoint_t)worker, 1, "foo"));
     isnotnull(pcaio_schedule("w #2", (pcaio_entrypoint_t)worker, 1, "thud"));
@@ -85,7 +83,7 @@ test_api_simple() {
     hits = 0;
     memset(logs, 0, sizeof(int) * 6);
     eqint(0, pcaio());
-    eqint(0, pcaio_free());
+    eqint(0, pcaio_deinit());
     eqint(6, hits);
     eqint(3, logs[0]);
     eqint(4, logs[1]);

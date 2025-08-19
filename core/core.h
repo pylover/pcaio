@@ -22,11 +22,13 @@
 
 /* local private */
 #include "task.h"
+#include "threadpool.h"
 
 
 struct pcaio {
-    struct pcaio_config * config;
+    struct pcaio_config *config;
     struct taskqueue tasks;
+    struct threadpool pool;
 };
 
 

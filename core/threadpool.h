@@ -16,48 +16,42 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef INCLUDE_PCAIO_PCAIO_H_
-#define INCLUDE_PCAIO_PCAIO_H_
+#ifndef CORE_THREADPOOL_H_
+#define CORE_THREADPOOL_H_
 
 
-struct pcaio;
-struct pcaio_task;
-typedef int (*pcaio_entrypoint_t) (int argc, void *argv[]);
+/* local private */
+#include "thread.h"
+
+/* local public */
+#include "pcaio/pcaio.h"
 
 
-/* this structure must be filled by user */
-struct pcaio_config {
-    unsigned short workers_min;
-    unsigned short workers_max;
+struct threadpool {
+    thread_start_t starter;
+    void *starter_arg;
+    unsigned short min;
+    unsigned short max;
+    unsigned short count;
+    thread_t *threads;
 };
 
 
 int
-pcaio_init(struct pcaio_config *config);
+threadpool_init(struct threadpool *p, struct pcaio_config *c,
+        thread_start_t starter, void *arg);
 
 
 int
-pcaio_deinit();
+threadpool_deinit(struct threadpool *p);
 
 
 int
-pcaio();
-
-
-struct pcaio_task *
-pcaio_schedule(const char *id, pcaio_entrypoint_t func, int argc, ...);
-
-
-struct pcaio_task *
-pcaio_task_new(const char *id, pcaio_entrypoint_t func, int argc, ...);
+threadpool_startall(struct threadpool *p);
 
 
 int
-pcaio_task_schedule(struct pcaio_task *t);
+threadpool_waitall(struct threadpool *p);
 
 
-void
-pcaio_task_relax();
-
-
-#endif  // INCLUDE_PCAIO_PCAIO_H_
+#endif  // CORE_THREADPOOL_H_

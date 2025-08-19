@@ -28,9 +28,6 @@
 
 
 typedef struct worker {
-    thread_t tid;
-    // FIXME: move the pcaio to a specific localstorage
-    struct pcaio *pcaio;
     struct ucontext_t maincontext;
     struct pcaio_task *currenttask;
 } worker_t;
@@ -50,7 +47,7 @@ worker_free(struct worker *w);
 
 
 int
-worker(struct worker *w);
+worker(struct taskqueue *q);
 
 
 #endif  // CORE_WORKER_H_

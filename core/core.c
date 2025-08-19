@@ -18,8 +18,10 @@
  */
 /* standard */
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdarg.h>
 #include <ucontext.h>
+#include <errno.h>
 
 /* thirdparty */
 #include <clog.h>
@@ -29,9 +31,13 @@
 #include "core.h"
 #include "task.h"
 #include "worker.h"
+#include "threadpool.h"
 
 /* local public */
 #include "pcaio/pcaio.h"
+
+
+static struct pcaio *_pcaio;
 
 
 struct pcaio_config *
@@ -43,18 +49,24 @@ pcaio_config_default() {
         return NULL;
     }
 
-    c->taskqueue_size = 16;
-    c->workers = 1;
+    c->workers_min = 1;
+    c->workers_max = 1;
     return c;
 }
 
 
-struct pcaio *
-pcaio_new(struct pcaio_config *config) {
+int
+pcaio_init(struct pcaio_config *config) {
     struct pcaio *p;
+
+    if (_pcaio) {
+        ERROR("already initialized");
+        return -1;
+    }
+
     p = malloc(sizeof(struct pcaio));
     if (p == NULL) {
-        return NULL;
+        return -1;
     }
 
     if (config == NULL) {
@@ -66,45 +78,35 @@ pcaio_new(struct pcaio_config *config) {
 
     if (taskqueue_init(&p->tasks)) {
         free(p);
-        return NULL;
+        return -1;
     }
 
-    struct worker *worker = worker_new();
-    worker->pcaio = p;
-    threadlocalworker_set(worker);
+    if (threadpool_init(&p->pool, p->config, (thread_start_t)worker,
+                &p->tasks)) {
+        return -1;
+    }
 
-    return p;
+    _pcaio = p;
+    return 0;
 }
 
 
 int
-pcaio_free() {
-    struct pcaio *p;
-    struct worker *w = threadlocalworker_get();
-
-    if (w == NULL) {
+pcaio_deinit() {
+    if (_pcaio == NULL) {
         return -1;
     }
 
-    p = w->pcaio;
-    if (p == NULL) {
-        return -1;
-    }
-
-    taskqueue_deinit(&p->tasks);
-    worker_free(w);
-    free(p);
+    taskqueue_deinit(&_pcaio->tasks);
+    free(_pcaio);
+    _pcaio = NULL;
     return 0;
 }
 
 
 int
 pcaio_task_schedule(struct pcaio_task *t) {
-    struct worker *w = threadlocalworker_get();
-    struct pcaio *p = w->pcaio;
-
-    // FIXME: thread-safe push
-    taskqueue_push(&p->tasks, t);
+    taskqueue_push(&_pcaio->tasks, t);
 
     return 0;
 }
@@ -165,12 +167,24 @@ pcaio_task_relax() {
 
 int
 pcaio() {
-    struct worker *w = threadlocalworker_get();
-    struct pcaio *p = w->pcaio;
-    struct pcaio_config *c = p->config;
+    unsigned int i;
 
-    for (int i = 1; i < c->workers; i++) {
-        // TODO: create thread
+    if (_pcaio == NULL) {
+        errno = EINVAL;
+        ERROR("call pcaio_init() once before the %s().", __func__);
+        return -1;
     }
-    return worker(w);
+
+    if (threadpool_startall(&_pcaio->pool)) {
+        errno = ENOMEM;
+        ERROR("threadpool_startall");
+        return -1;
+    }
+
+    for (;;i++) {
+        sleep(3);
+        DEBUG("%.6d watchdog", i);
+    }
+
+    return threadpool_waitall(&_pcaio->pool);
 }

@@ -60,60 +60,45 @@ _stepforward(struct worker *worker, struct pcaio_task *task) {
 }
 
 
-struct worker *
-worker_new() {
-    struct worker *w = malloc(sizeof(struct worker));
-    if (w == NULL) {
-        return NULL;
-    }
-
-    memset(w, 0, sizeof(struct worker));
-    return w;
-}
-
-
 int
-worker_free(struct worker *w) {
-    if (w == NULL) {
-        return -1;
-    }
-
-    free(w);
+worker_sigterm(thread_t tid) {
+    // TODO: send signal
     return 0;
 }
 
 
-static int
-_loop(struct worker *w) {
-    struct taskqueue *tasks = &w->pcaio->tasks;
-    struct pcaio_task *t;
+// static int
+// _loop(struct worker *w) {
+//     struct taskqueue *tasks = &w->pcaio->tasks;
+//     struct pcaio_task *t;
+//
+//     while (taskqueue_pop(tasks, &t) >= 0) {
+//         if (_stepforward(w, t)) {
+//             /* task is terminated and disposed. so, do not schedule it again
+//              * and continue to pop the next task to execute */
+//             continue;
+//         }
+//
+//         /* re-schedule the task */
+//         taskqueue_push(tasks, t);
+//     }
+//
+//     // TODO: cleanup the whole worker and thread
+//     return 0;
+// }
 
-    // FIXME: thread-safe pop
-    while (taskqueue_pop(tasks, &t) >= 0) {
-        if (_stepforward(w, t)) {
-            /* task is terminated and disposed. so, do not schedule it again
-             * and continue to pop the next task to execute */
-            continue;
-        }
 
-        // FIXME: thread-safe push
-        /* re-schedule the task */
-        taskqueue_push(tasks, t);
-    }
-
-    return 0;
-}
-
-
-/** spawns a new thread for the worker's loop.
+/** spawns and start a new thread for the worker's loop. sets the tidout and
  * then immediately returns 0 if enrything was ok. otherwise -1.
  */
 int
-worker(struct worker *w) {
-    if (thread_new(&w->tid, (thread_start_t)_loop, w)) {
-        ERROR("thread_new");
-        return -1;
-    }
+worker(struct taskqueue *q) {
+    // w = malloc(sizeof(struct worker));
+    // if (w == NULL) {
+    //     return -1;
+    // }
 
-    return 0;
+    // memset(w, 0, sizeof(struct worker));
+    // return 0;
+    return -1;
 }
