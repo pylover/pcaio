@@ -22,14 +22,15 @@
 
 /* standard */
 #include <threads.h>
+#include <stdatomic.h>
 
 
 typedef thrd_t thread_t;
-typedef int (*thread_start_t) (void *);
+typedef int (*thread_start_t) (atomic_bool *cancel);
 
 
 int
-thread_new(thread_t *tid, thread_start_t f, void *arg);
+thread_new(thread_t *tid, thread_start_t f, atomic_bool *cancel);
 
 
 #endif  // CORE_THREAD_H_

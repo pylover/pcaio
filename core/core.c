@@ -81,8 +81,7 @@ pcaio_init(struct pcaio_config *config) {
         return -1;
     }
 
-    if (threadpool_init(&p->pool, p->config, (thread_start_t)worker,
-                &p->tasks)) {
+    if (threadpool_init(&p->pool, p->config, (thread_start_t)worker)) {
         return -1;
     }
 
@@ -147,6 +146,7 @@ pcaio_task_new(const char *id, pcaio_entrypoint_t func, int argc, ...) {
 
 int
 pcaio_task_free(struct pcaio_task *t) {
+    // FIXME: do something! to avoid additional function call.
     return task_free(t);
 }
 
@@ -175,7 +175,7 @@ pcaio() {
         return -1;
     }
 
-    if (threadpool_startall(&_pcaio->pool)) {
+    if (threadpool_minimum(&_pcaio->pool)) {
         errno = ENOMEM;
         ERROR("threadpool_startall");
         return -1;

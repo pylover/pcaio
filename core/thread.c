@@ -29,10 +29,10 @@
 
 
 int
-thread_new(thread_t *tid, thread_start_t f, void *arg) {
+thread_new(thread_t *tid, thread_start_t f, atomic_bool *cancel) {
     int status;
 
-    status = thrd_create(tid, f, arg);
+    status = thrd_create(tid, (thrd_start_t)f, (void *)cancel);
     if (status != thrd_success) {
         if (status == thrd_nomem) {
             errno = ENOMEM;

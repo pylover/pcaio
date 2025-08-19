@@ -2,6 +2,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+/* thirdparty */
+#include <clog.h>
+
 /* local private */
 #include "threadpool.h"
 
@@ -10,49 +13,87 @@
 
 
 int
-threadpool_init(struct threadpool *p, struct pcaio_config *c,
-        thread_start_t starter, void *arg) {
-    thread_t *t;
+threadpool_init(struct threadpool *tp, struct pcaio_config *c,
+        thread_start_t starter) {
+    struct thread *t;
 
-    t = malloc(sizeof(thread_t *) * c->workers_max);
+    t = malloc(sizeof(struct thread) * c->workers_max);
     if (t == NULL) {
         return -1;
     }
 
-    p->threads = t;
-    p->starter = starter;
-    p->starter_arg = arg;
-    p->min = c->workers_min;
-    p->max = c->workers_max;
-    p->count = 0;
+    tp->threads = t;
+    tp->starter = starter;
+    tp->min = c->workers_min;
+    tp->max = c->workers_max;
+    tp->count = 0;
     return 0;
 }
 
 
 int
-threadpool_deinit(struct threadpool *p) {
-    if (p == NULL) {
+threadpool_deinit(struct threadpool *tp) {
+    if (tp == NULL) {
         return -1;
     }
 
-    if (p->threads) {
-        free(p->threads);
+    if (tp->threads) {
+        free(tp->threads);
     }
 
-    memset(p, 0, sizeof(struct threadpool));
+    memset(tp, 0, sizeof(struct threadpool));
     return -1;
 }
 
 
 int
-threadpool_waitall(struct threadpool *p) {
+threadpool_waitall(struct threadpool *tp) {
     // TODO: wait for all threads
     return -1;
 }
 
 
+static void
+_cancelone(struct threadpool *tp) {
+    // TODO: Implement
+}
+
 int
-threadpool_startall(struct threadpool *p) {
-    // TODO: start all threads
+threadpool_cancelall(struct threadpool *tp) {
+    // TODO: Implement
+    return -1;
+}
+
+
+int
+threadpool_tune(struct threadpool *tp, unsigned short count) {
+    int i;
+    struct thread *t;
+    unsigned short backup;
+
+    if (tp == NULL) {
+        return -1;
+    }
+
+    backup = tp->count;
+    while (tp->count > count) {
+        _cancelone(tp);
+    }
+
+    for (i = tp->count; i < count; i++) {
+        t = tp->threads + i;
+        if (thread_new(&t->id, tp->starter, &t->cancel)) {
+            ERROR("thread_new");
+            goto rollback;
+        }
+        tp->count++;
+    }
+
+    return 0;
+
+rollback:
+    if (threadpool_tune(tp, backup)) {
+        ERROR("rollback: threadpool_tune");
+    }
     return -1;
 }

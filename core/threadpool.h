@@ -27,19 +27,28 @@
 #include "pcaio/pcaio.h"
 
 
+struct thread {
+    thread_t id;
+    atomic_bool cancel;
+};
+
+
 struct threadpool {
     thread_start_t starter;
-    void *starter_arg;
     unsigned short min;
     unsigned short max;
     unsigned short count;
-    thread_t *threads;
+    struct thread *threads;
 };
+
+
+#define threadpool_minimum(tp) threadpool_tune(tp, (tp)->min)
+#define threadpool_maximum(tp) threadpool_tune(tp, (tp)->max)
 
 
 int
 threadpool_init(struct threadpool *p, struct pcaio_config *c,
-        thread_start_t starter, void *arg);
+        thread_start_t starter);
 
 
 int
@@ -47,7 +56,11 @@ threadpool_deinit(struct threadpool *p);
 
 
 int
-threadpool_startall(struct threadpool *p);
+threadpool_tune(struct threadpool *p, unsigned short count);
+
+
+int
+threadpool_cancelall(struct threadpool *tp);
 
 
 int

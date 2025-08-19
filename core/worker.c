@@ -18,6 +18,7 @@
  */
 /* standard */
 #include <stdlib.h>
+#include <unistd.h>
 
 /* thirdparty */
 #include <clog.h>
@@ -33,38 +34,31 @@
 #include "pcaio/threadlocalT.c"
 
 
-static int
-_stepforward(struct worker *worker, struct pcaio_task *task) {
-    if ((task->status == TS_NAIVE) &&
-            // FIXME: maincontext must be thread-local
-            (task_createcontext(task, &worker->maincontext))) {
-        return -1;
-    }
-
-    worker->currenttask = task;
-    // asm volatile("": : :"memory");
-
-    if (swapcontext(&worker->maincontext, &task->context)) {
-        FATAL("swapcontext to task");
-    }
-
-    if (task->status == TS_TERMINATING) {
-        if (task_free(task)) {
-            FATAL("task_free");
-        }
-
-        return 1;
-    }
-
-    return 0;
-}
-
-
-int
-worker_sigterm(thread_t tid) {
-    // TODO: send signal
-    return 0;
-}
+// static int
+// _stepforward(struct worker *worker, struct pcaio_task *task) {
+//     if ((task->status == TS_NAIVE) &&
+//             // FIXME: maincontext must be thread-local
+//             (task_createcontext(task, &worker->maincontext))) {
+//         return -1;
+//     }
+//
+//     worker->currenttask = task;
+//     // asm volatile("": : :"memory");
+//
+//     if (swapcontext(&worker->maincontext, &task->context)) {
+//         FATAL("swapcontext to task");
+//     }
+//
+//     if (task->status == TS_TERMINATING) {
+//         if (task_free(task)) {
+//             FATAL("task_free");
+//         }
+//
+//         return 1;
+//     }
+//
+//     return 0;
+// }
 
 
 // static int
@@ -92,7 +86,7 @@ worker_sigterm(thread_t tid) {
  * then immediately returns 0 if enrything was ok. otherwise -1.
  */
 int
-worker(struct taskqueue *q) {
+worker(atomic_bool *cancel) {
     // w = malloc(sizeof(struct worker));
     // if (w == NULL) {
     //     return -1;
@@ -100,5 +94,11 @@ worker(struct taskqueue *q) {
 
     // memset(w, 0, sizeof(struct worker));
     // return 0;
+    thread_t tid = thrd_current();
+    while (!(*cancel)) {
+        DEBUG("worker: %d, tick", tid);
+        sleep(1);
+    }
+
     return -1;
 }

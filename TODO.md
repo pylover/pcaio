@@ -1,5 +1,6 @@
 - revise includes
 - profile
+- valicate config before start anything
 
 ## syscalls
 - futex(2) 

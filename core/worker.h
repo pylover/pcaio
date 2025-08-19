@@ -47,7 +47,7 @@ worker_free(struct worker *w);
 
 
 int
-worker(struct taskqueue *q);
+worker(atomic_bool *cancel);
 
 
 #endif  // CORE_WORKER_H_
