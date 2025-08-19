@@ -120,8 +120,8 @@ if (PCAIO_BUILD_TESTS)
 endif()
 
 
-# # Examples
-# option(PCAIO_BUILD_EXAMPLES "Build examples/*.c" ON)
-# if (PCAIO_BUILD_EXAMPLES)
-#   add_subdirectory(examples)
-# endif()
+# Examples
+option(PCAIO_BUILD_EXAMPLES "Build examples/*.c" ON)
+if (PCAIO_BUILD_EXAMPLES)
+  add_subdirectory(examples)
+endif()
