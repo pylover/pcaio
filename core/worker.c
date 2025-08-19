@@ -94,9 +94,14 @@ worker(atomic_bool *cancel) {
 
     // memset(w, 0, sizeof(struct worker));
     // return 0;
+
+    if (!atomic_is_lock_free(cancel)) {
+        FATAL("atomic_bool cancel is not lockfree!");
+    }
+
     thread_t tid = thrd_current();
-    while (!(*cancel)) {
-        DEBUG("worker: %d, tick", tid);
+    while (!atomic_load(cancel)) {
+        DEBUG("worker: %lu, tick", tid);
         sleep(1);
     }
 

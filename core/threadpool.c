@@ -46,22 +46,31 @@ threadpool_deinit(struct threadpool *tp) {
 }
 
 
-int
-threadpool_waitall(struct threadpool *tp) {
-    // TODO: wait for all threads
-    return -1;
-}
-
-
-static void
+static int
 _cancelone(struct threadpool *tp) {
-    // TODO: Implement
+    int status;
+    struct thread *th;
+
+    th = &tp->threads[--tp->count];
+    atomic_store(&th->cancel, true);
+    if (thread_join(th->id, &status)) {
+        FATAL("thread_join");
+    }
+
+    ERROR("thread: %lu exited with status: %d", th->id, status);
+    return status;
 }
+
 
 int
 threadpool_cancelall(struct threadpool *tp) {
-    // TODO: Implement
-    return -1;
+    while (tp->count) {
+        if (_cancelone(tp)) {
+            return -1;
+        }
+    }
+
+    return 0;
 }
 
 

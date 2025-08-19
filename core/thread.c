@@ -42,3 +42,9 @@ thread_new(thread_t *tid, thread_start_t f, atomic_bool *cancel) {
 
     return 0;
 }
+
+
+int
+thread_join(thread_t tid, int *status) {
+    return thrd_join(tid, status) != thrd_success;
+}

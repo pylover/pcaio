@@ -63,8 +63,4 @@ int
 threadpool_cancelall(struct threadpool *tp);
 
 
-int
-threadpool_waitall(struct threadpool *p);
-
-
 #endif  // CORE_THREADPOOL_H_

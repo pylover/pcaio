@@ -167,8 +167,6 @@ pcaio_task_relax() {
 
 int
 pcaio() {
-    unsigned int i;
-
     if (_pcaio == NULL) {
         errno = EINVAL;
         ERROR("call pcaio_init() once before the %s().", __func__);
@@ -181,10 +179,11 @@ pcaio() {
         return -1;
     }
 
-    for (;;i++) {
-        sleep(3);
-        DEBUG("%.6d watchdog", i);
-    }
+    DEBUG("watchdog.......");
+    sleep(5);
+    // unsigned int i;
+    // for (;;i++) {
+    // }
 
-    return threadpool_waitall(&_pcaio->pool);
+    return threadpool_cancelall(&_pcaio->pool);
 }

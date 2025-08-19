@@ -33,4 +33,8 @@ int
 thread_new(thread_t *tid, thread_start_t f, atomic_bool *cancel);
 
 
+int
+thread_join(thread_t tid, int *status);
+
+
 #endif  // CORE_THREAD_H_
