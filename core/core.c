@@ -126,13 +126,13 @@ pcaio_task_schedule(struct pcaio_task *t) {
 
 
 struct pcaio_task *
-pcaio_schedule(const char *id, pcaio_entrypoint_t func, int argc, ...) {
+pcaio_task_newschedule(pcaio_entrypoint_t func, int argc, ...) {
     va_list args;
     struct pcaio_task *t;
 
     /* create a new task*/
     va_start(args, argc);
-    t = task_vnew(id, func, argc, args);
+    t = task_vnew(func, argc, args);
     va_end(args);
 
     if (pcaio_task_schedule(t)) {
@@ -145,13 +145,13 @@ pcaio_schedule(const char *id, pcaio_entrypoint_t func, int argc, ...) {
 
 
 struct pcaio_task *
-pcaio_task_new(const char *id, pcaio_entrypoint_t func, int argc, ...) {
+pcaio_task_new(pcaio_entrypoint_t func, int argc, ...) {
     va_list args;
     struct pcaio_task *t;
 
     /* create a new task*/
     va_start(args, argc);
-    t = task_vnew(id, func, argc, args);
+    t = task_vnew(func, argc, args);
     va_end(args);
 
     return t;
@@ -172,7 +172,7 @@ pcaio_task_free(struct pcaio_task *t) {
 /** this function will be called from worker threads.
  */
 void
-pcaio_task_relax() {
+pcaio_currenttask_relax() {
     ucontext_t *ctx;
     struct pcaio_task *t;
 

@@ -53,7 +53,6 @@ struct pcaio_task {
     enum taskstatus status;
 
     /* provided by the user */
-    const char *id;
     pcaio_entrypoint_t func;
     int argc;
     void *argv[];
@@ -62,7 +61,7 @@ struct pcaio_task {
 
 
 struct pcaio_task *
-task_vnew(const char *id, pcaio_entrypoint_t func, int argc, va_list args);
+task_vnew(pcaio_entrypoint_t func, int argc, va_list args);
 
 
 int

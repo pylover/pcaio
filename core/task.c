@@ -43,19 +43,19 @@ _taskmain(struct pcaio_task *t) {
 
     status = t->func(t->argc, t->argv);
     if (status) {
-        ERROR("task %s exited with status: %d", t->id, status);
+        ERROR("task %p exited with status: %d", t, status);
     }
     t->status = TS_TERMINATING;
 }
 
 
 struct pcaio_task *
-task_vnew(const char *id, pcaio_entrypoint_t func, int argc, va_list args) {
+task_vnew(pcaio_entrypoint_t func, int argc, va_list args) {
     struct pcaio_task *t;
     size_t allocsize;
 
     /* validate arguments */
-    if ((id == NULL) || (func == NULL)) {
+    if (func == NULL) {
         errno = EINVAL;
         return NULL;
     }
@@ -69,9 +69,6 @@ task_vnew(const char *id, pcaio_entrypoint_t func, int argc, va_list args) {
 
     /* zero it */
     memset(t, 0, allocsize);
-
-    /* store the id */
-    t->id = id;
 
     /* store entry point */
     t->func = func;
