@@ -45,6 +45,7 @@ add_library(pcaio SHARED
   $<TARGET_OBJECTS:task>
   $<TARGET_OBJECTS:context>
   $<TARGET_OBJECTS:worker>
+  $<TARGET_OBJECTS:master>
   $<TARGET_OBJECTS:core>
 )
 

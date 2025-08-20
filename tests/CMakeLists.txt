@@ -29,7 +29,10 @@ foreach (t IN LISTS testrules)
   add_executable(${t} ${t}.c 
     # $<TARGET_OBJECTS:helpers>
   )
-  target_include_directories(${t} PUBLIC "${PROJECT_BINARY_DIR}")
+  target_include_directories(${t} PUBLIC 
+    "${PROJECT_BINARY_DIR}"
+    "${PROJECT_SOURCE_DIR}"
+  )
   target_link_libraries(${t} PRIVATE pcaio clog)
   add_test(NAME ${t} COMMAND ${t})
 

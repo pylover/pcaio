@@ -32,20 +32,16 @@ struct pcaio_config {
 };
 
 
+struct pcaio_config *
+pcaio_config_default();
+
+
 int
 pcaio_init(struct pcaio_config *config);
 
 
 int
 pcaio_deinit();
-
-
-int
-pcaio();
-
-
-struct pcaio_task *
-pcaio_task_new(pcaio_entrypoint_t func, int argc, ...);
 
 
 int
@@ -56,8 +52,20 @@ struct pcaio_task *
 pcaio_task_newschedule(pcaio_entrypoint_t func, int argc, ...);
 
 
+struct pcaio_task *
+pcaio_task_new(pcaio_entrypoint_t func, int argc, ...);
+
+
+int
+pcaio_task_free(struct pcaio_task *t);
+
+
 void
 pcaio_currenttask_relax();
+
+
+int
+pcaio();
 
 
 #endif  // INCLUDE_PCAIO_PCAIO_H_

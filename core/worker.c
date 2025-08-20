@@ -24,7 +24,8 @@
 #include <clog.h>
 
 /* local private */
-#include "core.h"
+#include "config.h"
+#include "master.h"
 #include "task.h"
 #include "worker.h"
 
@@ -81,14 +82,20 @@
  */
 int
 worker(atomic_bool *cancel) {
+    // struct pcaio_task *t;
+    thread_t tid;
+
     if (!atomic_is_lock_free(cancel)) {
         FATAL("atomic_bool cancel is not lockfree!");
     }
 
-    thread_t tid = thrd_current();
+    tid = thrd_current();
     while (!atomic_load(cancel)) {
-        DEBUG("worker: %lu, tick", tid);
-        sleep(1);
+        // if (taskqueue_pop(tasks, &t)) {
+        //     /* task queue is empty, goto deep sleep */
+        //     sleep(CONFIG_PCAIO_WORKER_DEEPSLEEP_S);
+        // }
+        sleep(CONFIG_PCAIO_WORKER_DEEPSLEEP_S);
     }
 
     DEBUG("worker: %lu, canceled", tid);

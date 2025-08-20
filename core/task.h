@@ -28,12 +28,10 @@ typedef struct pcaio_task task_t;
 #undef T
 #define T task
 #include "threadlocalT.h"
+#include "queueT.h"
 
 /* local public */
 #include "pcaio/pcaio.h"
-#undef T
-#define T task
-#include "pcaio/queueT.h"
 
 
 enum taskstatus {

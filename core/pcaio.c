@@ -16,30 +16,27 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
+
+
+/** pcaio public APIs
+ */
+
+
 /* standard */
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdarg.h>
-#include <ucontext.h>
-#include <errno.h>
 #include <signal.h>
+#include <stdlib.h>
+#include <stdarg.h>
 
 /* thirdparty */
 #include <clog.h>
 
 /* local private */
-#include "config.h"
-#include "core.h"
 #include "task.h"
 #include "context.h"
-#include "worker.h"
-#include "threadpool.h"
+#include "master.h"
 
 /* local public */
 #include "pcaio/pcaio.h"
-
-
-static struct pcaio *_pcaio;
 
 
 struct pcaio_config *
@@ -59,68 +56,29 @@ pcaio_config_default() {
 
 int
 pcaio_init(struct pcaio_config *config) {
-    struct pcaio *p;
-
-    if (_pcaio) {
-        ERROR("already initialized");
-        return -1;
-    }
-
-    p = malloc(sizeof(struct pcaio));
-    if (p == NULL) {
-        return -1;
-    }
-
     if (config == NULL) {
-        p->config = pcaio_config_default();
+        config = pcaio_config_default();
     }
     else {
-        p->config = config;
+        config = config;
     }
 
-    if (taskqueue_init(&p->tasks)) {
-        free(p);
-        return -1;
-    }
-
-    if (threadpool_init(&p->pool, p->config, (thread_start_t)worker)) {
-        taskqueue_deinit(&p->tasks);
-        free(p);
-        return -1;
-    }
-
-    /* threadlocal storages */
-    if (threadlocaltask_init(task_free)
-            || threadlocalucontext_init(NULL)) {
-        threadpool_deinit(&p->pool);
-        taskqueue_deinit(&p->tasks);
-        free(p);
-        return -1;
-    }
-
-    p->cancel = false;
-    _pcaio = p;
-    return 0;
+    return master_init(config);
 }
 
 
 int
 pcaio_deinit() {
-    if (_pcaio == NULL) {
-        return -1;
-    }
-
-    taskqueue_deinit(&_pcaio->tasks);
-    free(_pcaio);
-    _pcaio = NULL;
-    return 0;
+    return master_deinit();
 }
 
 
 int
 pcaio_task_schedule(struct pcaio_task *t) {
-    taskqueue_push(&_pcaio->tasks, t);
-
+    if (t == NULL) {
+        return -1;
+    }
+    master_schedule(t);
     return 0;
 }
 
@@ -135,11 +93,11 @@ pcaio_task_newschedule(pcaio_entrypoint_t func, int argc, ...) {
     t = task_vnew(func, argc, args);
     va_end(args);
 
-    if (pcaio_task_schedule(t)) {
-        task_free(t);
+    if (t == NULL) {
         return NULL;
     }
 
+    master_schedule(t);
     return t;
 }
 
@@ -200,18 +158,12 @@ pcaio_currenttask_relax() {
 static void
 _signal(int sig) {
     printf("signal received: %d\n", sig);
-    _pcaio->cancel = true;
+    master_cancel();
 }
 
 
 int
 pcaio() {
-    if (_pcaio == NULL) {
-        errno = EINVAL;
-        ERROR("call pcaio_init() once before the %s().", __func__);
-        return -1;
-    }
-
     struct sigaction sigact;
     sigact.sa_handler = _signal;
 
@@ -220,16 +172,5 @@ pcaio() {
         return -1;
     }
 
-    if (threadpool_minimum(&_pcaio->pool)) {
-        errno = ENOMEM;
-        ERROR("threadpool_startall");
-        return -1;
-    }
-
-    while (!_pcaio->cancel) {
-        sleep(1);
-    }
-
-    INFO("canceling all workers...");
-    return threadpool_cancelall(&_pcaio->pool);
+    return master();
 }

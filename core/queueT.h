@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef INCLUDE_PCAIO_QUEUET_H_
-#define INCLUDE_PCAIO_QUEUET_H_
+#ifndef CORE_QUEUET_H_
+#define CORE_QUEUET_H_
 
 
 #include "pcaio/mutex.h"
@@ -30,7 +30,7 @@
 #define QELTYP() QNAME(_t)
 
 
-#endif  // INCLUDE_PCAIO_QUEUET_H_
+#endif  // CORE_QUEUET_H_
 
 
 /* generic<template> definitions */

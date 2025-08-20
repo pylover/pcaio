@@ -16,21 +16,44 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_CORE_H_
-#define CORE_CORE_H_
+#ifndef CORE_MASTER_H_
+#define CORE_MASTER_H_
 
 
 /* local private */
 #include "task.h"
 #include "threadpool.h"
 
+/* local public */
+#include "pcaio/pcaio.h"
 
-struct pcaio {
-    volatile int cancel;
+
+struct master {
+    volatile bool cancel;
     struct pcaio_config *config;
     struct taskqueue tasks;
     struct threadpool pool;
 };
 
 
-#endif  // CORE_CORE_H_
+int
+master_init(struct pcaio_config *config);
+
+
+int
+master_deinit();
+
+
+void
+master_cancel();
+
+
+void
+master_schedule(struct pcaio_task *t);
+
+
+int
+master();
+
+
+#endif  // CORE_MASTER_H_

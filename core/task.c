@@ -29,12 +29,10 @@
 #undef T
 #define T task
 #include "threadlocalT.c"
+#include "queueT.c"
 
 /* local public */
 #include "pcaio/pcaio.h"
-#undef T
-#define T task
-#include "pcaio/queueT.c"
 
 
 static void
