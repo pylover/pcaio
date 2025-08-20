@@ -36,8 +36,7 @@ typedef struct pcaio_task task_t;
 
 enum taskstatus {
     TS_NAIVE,
-    TS_ARTFUL,
-    TS_RELAXING,
+    TS_COUNTED,
     TS_TERMINATING,
 };
 
@@ -47,8 +46,8 @@ struct pcaio_task {
     struct pcaio_task *next;
 
     /* used by worker */
-    size_t stacksize;
     struct ucontext_t context;
+    // size_t stacksize;
     enum taskstatus status;
 
     /* provided by the user */
@@ -62,8 +61,8 @@ struct pcaio_task *
 task_new(pcaio_entrypoint_t func, int argc, va_list args);
 
 
-int
-task_createcontext(struct pcaio_task *t, ucontext_t *successor);
+// int
+// task_createcontext(struct pcaio_task *t, ucontext_t *successor);
 
 
 void

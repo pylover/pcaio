@@ -34,10 +34,6 @@
 
 static int
 _stepforward(struct pcaio_task *t, ucontext_t *landing) {
-    if ((t->status == TS_NAIVE) && (task_createcontext(t, landing))) {
-        return -1;
-    }
-
     threadlocaltask_set(t);
     if (swapcontext(landing, &t->context)) {
         FATAL("swapcontext to task");
@@ -46,6 +42,7 @@ _stepforward(struct pcaio_task *t, ucontext_t *landing) {
     /* after working a bit on task */
     if (t->status == TS_TERMINATING) {
         task_free(t);
+        master_tasks_decrease();
         return 1;
     }
 
@@ -95,5 +92,5 @@ worker(atomic_bool *cancel) {
     INFO("worker: %lu, canceled", tid);
     threadlocaltask_delete();
     threadlocalucontext_delete();
-    return -1;
+    return 0;
 }

@@ -74,6 +74,7 @@ master_init(struct pcaio_config *config) {
 
     m->config = config;
     m->cancel = false;
+    m->tasks = 0;
     _master = m;
     return 0;
 }
@@ -99,7 +100,17 @@ master_deinit() {
 
 
 void
+master_tasks_decrease() {
+    atomic_fetch_sub(&_master->tasks, 1);
+}
+
+
+void
 master_report(struct pcaio_task *t) {
+    if (t->status == TS_NAIVE) {
+        t->status = TS_COUNTED;
+        atomic_fetch_add(&_master->tasks, 1);
+    }
     taskqueue_push(&_master->taskq, t);
 }
 
@@ -137,8 +148,8 @@ master() {
         return -1;
     }
 
-    while (!_master->cancel) {
-        sleep(1);
+    while ((!_master->cancel) && (_master->tasks)) {
+        sleep(.3);
     }
 
     INFO("canceling all workers...");

@@ -25,6 +25,7 @@
 
 /* local private */
 #include "config.h"
+#include "context.h"
 #include "task.h"
 #undef T
 #define T task
@@ -38,18 +39,29 @@
 static void
 _taskmain(struct pcaio_task *t) {
     int status;
+    ucontext_t *ctx;
 
     status = t->func(t->argc, t->argv);
     if (status) {
         ERROR("task %p exited with status: %d", t, status);
     }
+    else {
+        INFO("task %p terminated successfully", t);
+    }
+
     t->status = TS_TERMINATING;
+    ctx = threadlocalucontext_get();
+    if (ctx == NULL) {
+        FATAL("threadlocalucontext_get");
+    }
+    setcontext(ctx);
 }
 
 
 struct pcaio_task *
 task_new(pcaio_entrypoint_t func, int argc, va_list args) {
     struct pcaio_task *t;
+    void *stack;
     size_t allocsize;
 
     /* validate arguments */
@@ -78,34 +90,22 @@ task_new(pcaio_entrypoint_t func, int argc, va_list args) {
         argc--;
     }
 
-    /* hollaaaa */
-    t->status = TS_NAIVE;
-    t->stacksize = CONFIG_PCAIO_STACKSIZE_DEFAULT;
-    return t;
-}
-
-
-/** allocate stack and create a dedicated ucontext for the task.
- */
-int
-task_createcontext(struct pcaio_task *t, ucontext_t *successor) {
-    void *stack;
-
     /* copy he current context */
     if (getcontext(&t->context) != 0) {
-        return -1;
+        free(t);
+        return NULL;
     }
 
     /* allocate mem for stack */
-    stack = malloc(t->stacksize);
+    stack = malloc(CONFIG_PCAIO_STACKSIZE_DEFAULT);
     if (stack == NULL) {
         free(t);
-        return -1;
+        return NULL;
     }
-    memset(stack, 0, t->stacksize);
+    memset(stack, 0, CONFIG_PCAIO_STACKSIZE_DEFAULT);
     t->context.uc_stack.ss_sp = stack;
-    t->context.uc_stack.ss_size = t->stacksize;
-    t->context.uc_link = successor;
+    t->context.uc_stack.ss_size = CONFIG_PCAIO_STACKSIZE_DEFAULT;
+    t->context.uc_link = NULL;
 
     /* create the actual ucontext */
     /* On architectures where int and pointer types are the same size
@@ -120,8 +120,8 @@ task_createcontext(struct pcaio_task *t, ucontext_t *successor) {
     // TODO: glibc >= 2.8 test macro
     makecontext(&t->context, (void (*)(void))_taskmain, 1, t);
 
-    t->status = TS_ARTFUL;
-    return 0;
+    /* hollaaaa */
+    return t;
 }
 
 

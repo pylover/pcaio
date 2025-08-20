@@ -41,7 +41,7 @@ _worker(int argc, char *argv[]) {
 
     i += 7;
     logs[hits++] = i;
-    return i;
+    return 0;
 }
 
 

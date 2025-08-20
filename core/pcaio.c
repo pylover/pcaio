@@ -128,23 +128,14 @@ pcaio_task_free(struct pcaio_task *t) {
 }
 
 
-/** this function will be called from worker threads.
- */
 void
-pcaio_currenttask_relax() {
+pcaio_task_relax(struct pcaio_task *t) {
     ucontext_t *ctx;
-    struct pcaio_task *t;
 
-    /* retrieve the thread local ucontext and task */
     ctx = threadlocalucontext_get();
-    t = threadlocaltask_get();
-    if ((ctx == NULL) || (t == NULL)) {
-        FATAL("threadlocal*_get");
+    if (ctx == NULL) {
+        FATAL("threadlocalucontext_get");
     }
-    t->status = TS_RELAXING;
-
-    /* memory barrier to ensure applying above statemetns */
-    asm volatile("": : :"memory");
 
     /* then clear the thread local task to indicate the worker is idle */
     threadlocaltask_set(NULL);
@@ -153,6 +144,22 @@ pcaio_currenttask_relax() {
     if (swapcontext(&(t->context), ctx)) {
         FATAL("swapcontext to main");
     }
+}
+
+
+/** this function will be called from worker threads.
+ */
+void
+pcaio_currenttask_relax() {
+    struct pcaio_task *t;
+
+    /* retrieve the thread local ucontext and task */
+    t = threadlocaltask_get();
+    if (t == NULL) {
+        FATAL("threadlocaltask_get");
+    }
+
+    pcaio_task_relax(t);
 }
 
 

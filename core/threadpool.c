@@ -75,8 +75,8 @@ _cancelone(struct threadpool *tp) {
         FATAL("thread_join");
     }
 
-    ERROR("thread: %lu exited with status: %d", th->id, status);
-    return status;
+    ERROR("thread: %lu terminated with status: %d", th->id, status);
+    return 0;
 }
 
 
