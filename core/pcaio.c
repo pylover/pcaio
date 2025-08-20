@@ -79,7 +79,7 @@ pcaio_task_schedule(struct pcaio_task *t) {
     if (t == NULL) {
         return -1;
     }
-    master_schedule(t);
+    master_report(t);
     return 0;
 }
 
@@ -98,7 +98,7 @@ pcaio_task_newschedule(pcaio_entrypoint_t func, int argc, ...) {
         return NULL;
     }
 
-    master_schedule(t);
+    master_report(t);
     return t;
 }
 

@@ -40,66 +40,79 @@ static struct master *_master;
 
 int
 master_init(struct pcaio_config *config) {
-    struct master *p;
+    struct master *m;
 
     if (_master) {
         ERROR("already initialized");
         return -1;
     }
 
-    p = malloc(sizeof(struct master));
-    if (p == NULL) {
+    m = malloc(sizeof(struct master));
+    if (m == NULL) {
         return -1;
     }
 
-    if (taskqueue_init(&p->tasks)) {
-        free(p);
+    if (taskqueue_init(&m->tasks)) {
+        free(m);
         return -1;
     }
 
-    if (threadpool_init(&p->pool, p->config, (thread_start_t)worker)) {
-        taskqueue_deinit(&p->tasks);
-        free(p);
+    if (threadpool_init(&m->pool, config, (thread_start_t)worker)) {
+        taskqueue_deinit(&m->tasks);
+        free(m);
         return -1;
     }
 
     /* threadlocal storages */
     if (threadlocaltask_init(task_free)
             || threadlocalucontext_init(NULL)) {
-        threadpool_deinit(&p->pool);
-        taskqueue_deinit(&p->tasks);
-        free(p);
+        threadpool_deinit(&m->pool);
+        taskqueue_deinit(&m->tasks);
+        free(m);
         return -1;
     }
 
-    p->cancel = false;
-    _master = p;
+    m->config = config;
+    m->cancel = false;
+    _master = m;
     return 0;
 }
 
 
 int
 master_deinit() {
-    struct master *p;
+    struct master *m;
 
     if (_master == NULL) {
         return -1;
     }
-    p = _master;
+    m = _master;
 
-    threadlocaltask_deinit();
-    threadlocalucontext_deinit();
-    threadpool_deinit(&p->pool);
-    taskqueue_deinit(&p->tasks);
-    free(p);
+    threadlocaltask_delete();
+    threadlocalucontext_delete();
+    threadpool_deinit(&m->pool);
+    taskqueue_deinit(&m->tasks);
+    free(m);
     _master = NULL;
     return 0;
 }
 
 
 void
-master_schedule(struct pcaio_task *t) {
+master_report(struct pcaio_task *t) {
     taskqueue_push(&_master->tasks, t);
+}
+
+
+struct pcaio_task *
+master_assign() {
+    struct pcaio_task *t;
+
+    if (taskqueue_pop(&_master->tasks, &t)) {
+        return NULL;
+    }
+
+    return t;
 }
 
 

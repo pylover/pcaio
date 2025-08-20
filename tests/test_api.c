@@ -28,21 +28,21 @@ int hits = 0;
 int logs[6];
 
 
-// int
-// worker(int argc, char *argv[]) {
-//     int i = strlen(argv[0]);
-//
-//     logs[hits++] = i;
-//     pcaio_task_relax();
-//
-//     i *= 3;
-//     logs[hits++] = i;
-//     pcaio_task_relax();
-//
-//     i += 7;
-//     logs[hits++] = i;
-//     return i;
-// }
+static int
+_worker(int argc, char *argv[]) {
+    int i = strlen(argv[0]);
+
+    logs[hits++] = i;
+    pcaio_currenttask_relax();
+
+    i *= 3;
+    logs[hits++] = i;
+    pcaio_currenttask_relax();
+
+    i += 7;
+    logs[hits++] = i;
+    return i;
+}
 
 
 // void
@@ -77,8 +77,8 @@ void
 test_api_simple() {
     pcaio_init(NULL);
 
-    // isnotnull(pcaio_schedule("w #1", (pcaio_entrypoint_t)worker, 1, "foo"));
-    // isnotnull(pcaio_schedule("w #2", (pcaio_entrypoint_t)worker, 1, "thud"));
+    isnotnull(pcaio_task_newschedule((pcaio_entrypoint_t)_worker, 1, "foo"));
+    isnotnull(pcaio_task_newschedule((pcaio_entrypoint_t)_worker, 1, "thud"));
 
     hits = 0;
     memset(logs, 0, sizeof(int) * 6);

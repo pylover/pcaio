@@ -55,4 +55,4 @@ TLNAME(_get) ();
 
 
 void
-TLNAME(_deinit) ();
+TLNAME(_delete) ();

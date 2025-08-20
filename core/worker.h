@@ -20,14 +20,6 @@
 #define CORE_WORKER_H_
 
 
-struct worker *
-worker_new();
-
-
-void
-worker_free(struct worker *w);
-
-
 int
 worker(atomic_bool *cancel);
 

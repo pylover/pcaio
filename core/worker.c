@@ -16,65 +16,41 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
+
 /* standard */
-#include <stdlib.h>
 #include <unistd.h>
+#include <ucontext.h>
 
 /* thirdparty */
 #include <clog.h>
 
 /* local private */
 #include "config.h"
+#include "context.h"
 #include "master.h"
 #include "task.h"
 #include "worker.h"
 
-// static int
-// _stepforward(struct worker *worker, struct pcaio_task *task) {
-//     if ((task->status == TS_NAIVE) &&
-//             // FIXME: maincontext must be thread-local
-//             (task_createcontext(task, &worker->maincontext))) {
-//         return -1;
-//     }
-//
-//     worker->currenttask = task;
-//     // asm volatile("": : :"memory");
-//
-//     if (swapcontext(&worker->maincontext, &task->context)) {
-//         FATAL("swapcontext to task");
-//     }
-//
-//     if (task->status == TS_TERMINATING) {
-//         if (task_free(task)) {
-//             FATAL("task_free");
-//         }
-//
-//         return 1;
-//     }
-//
-//     return 0;
-// }
 
+static int
+_stepforward(struct pcaio_task *t, ucontext_t *landing) {
+    if ((t->status == TS_NAIVE) && (task_createcontext(t, landing))) {
+        return -1;
+    }
 
-// static int
-// _loop(struct worker *w) {
-//     struct taskqueue *tasks = &w->pcaio->tasks;
-//     struct pcaio_task *t;
-//
-//     while (taskqueue_pop(tasks, &t) >= 0) {
-//         if (_stepforward(w, t)) {
-//             /* task is terminated and disposed. so, do not schedule it again
-//              * and continue to pop the next task to execute */
-//             continue;
-//         }
-//
-//         /* re-schedule the task */
-//         taskqueue_push(tasks, t);
-//     }
-//
-//     // TODO: cleanup the whole worker and thread
-//     return 0;
-// }
+    threadlocaltask_set(t);
+    if (swapcontext(landing, &t->context)) {
+        FATAL("swapcontext to task");
+    }
+
+    /* after working a bit on task */
+    if (t->status == TS_TERMINATING) {
+        task_free(t);
+        return 1;
+    }
+
+    return 0;
+}
 
 
 /** spawns and start a new thread for the worker's loop. sets the tidout and
@@ -82,22 +58,42 @@
  */
 int
 worker(atomic_bool *cancel) {
-    // struct pcaio_task *t;
+    static ucontext_t landing;
+    struct pcaio_task *t;
     thread_t tid;
 
     if (!atomic_is_lock_free(cancel)) {
-        FATAL("atomic_bool cancel is not lockfree!");
+        FATAL("atomic_bool is not lockfree!");
+    }
+
+    if (threadlocalucontext_set(&landing)) {
+        FATAL("threadlocalucontext_set");
     }
 
     tid = thrd_current();
     while (!atomic_load(cancel)) {
-        // if (taskqueue_pop(tasks, &t)) {
-        //     /* task queue is empty, goto deep sleep */
-        //     sleep(CONFIG_PCAIO_WORKER_DEEPSLEEP_S);
-        // }
-        sleep(CONFIG_PCAIO_WORKER_DEEPSLEEP_S);
+        /* get a task from master to work on */
+        t = master_assign();
+        if (t == NULL) {
+            /* task queue is empty, goto deep sleep and continue to pop the
+             * next task after wakeup */
+            sleep(CONFIG_PCAIO_WORKER_DEEPSLEEP_S);
+            continue;
+        }
+
+        /* work on as short as possible */
+        if (_stepforward(t, &landing)) {
+            /* task is terminated and disposed. so, do not schedule it again
+             * and continue to pop the next task to execute */
+            continue;
+        }
+
+        /* re-schedule the task */
+        master_report(t);
     }
 
-    DEBUG("worker: %lu, canceled", tid);
+    INFO("worker: %lu, canceled", tid);
+    threadlocaltask_delete();
+    threadlocalucontext_delete();
     return -1;
 }

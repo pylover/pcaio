@@ -64,6 +64,6 @@ TLNAME(_get) () {
 
 
 void
-TLNAME(_deinit) () {
+TLNAME(_delete) () {
     tss_delete(TLSTATICNAME(_storage));
 }

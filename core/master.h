@@ -48,8 +48,12 @@ void
 master_cancel();
 
 
+struct pcaio_task *
+master_assign();
+
+
 void
-master_schedule(struct pcaio_task *t);
+master_report(struct pcaio_task *t);
 
 
 int
