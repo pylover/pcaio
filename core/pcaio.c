@@ -26,6 +26,7 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <ucontext.h>
 
 /* thirdparty */
 #include <clog.h>

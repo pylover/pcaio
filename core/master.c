@@ -19,7 +19,6 @@
 /* standard */
 #include <stdlib.h>
 #include <unistd.h>
-// #include <ucontext.h>
 #include <errno.h>
 
 /* thirdparty */
