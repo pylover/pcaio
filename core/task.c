@@ -48,7 +48,7 @@ _taskmain(struct pcaio_task *t) {
 
 
 struct pcaio_task *
-task_vnew(pcaio_entrypoint_t func, int argc, va_list args) {
+task_new(pcaio_entrypoint_t func, int argc, va_list args) {
     struct pcaio_task *t;
     size_t allocsize;
 

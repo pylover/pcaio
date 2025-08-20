@@ -52,13 +52,13 @@ master_init(struct pcaio_config *config) {
         return -1;
     }
 
-    if (taskqueue_init(&m->tasks)) {
+    if (taskqueue_init(&m->taskq)) {
         free(m);
         return -1;
     }
 
     if (threadpool_init(&m->pool, config, (thread_start_t)worker)) {
-        taskqueue_deinit(&m->tasks);
+        taskqueue_deinit(&m->taskq);
         free(m);
         return -1;
     }
@@ -67,7 +67,7 @@ master_init(struct pcaio_config *config) {
     if (threadlocaltask_init(task_free)
             || threadlocalucontext_init(NULL)) {
         threadpool_deinit(&m->pool);
-        taskqueue_deinit(&m->tasks);
+        taskqueue_deinit(&m->taskq);
         free(m);
         return -1;
     }
@@ -91,7 +91,7 @@ master_deinit() {
     threadlocaltask_delete();
     threadlocalucontext_delete();
     threadpool_deinit(&m->pool);
-    taskqueue_deinit(&m->tasks);
+    taskqueue_deinit(&m->taskq);
     free(m);
     _master = NULL;
     return 0;
@@ -100,7 +100,7 @@ master_deinit() {
 
 void
 master_report(struct pcaio_task *t) {
-    taskqueue_push(&_master->tasks, t);
+    taskqueue_push(&_master->taskq, t);
 }
 
 
@@ -108,7 +108,7 @@ struct pcaio_task *
 master_assign() {
     struct pcaio_task *t;
 
-    if (taskqueue_pop(&_master->tasks, &t)) {
+    if (taskqueue_pop(&_master->taskq, &t)) {
         return NULL;
     }
 

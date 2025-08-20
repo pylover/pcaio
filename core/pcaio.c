@@ -91,7 +91,7 @@ pcaio_task_newschedule(pcaio_entrypoint_t func, int argc, ...) {
 
     /* create a new task*/
     va_start(args, argc);
-    t = task_vnew(func, argc, args);
+    t = task_new(func, argc, args);
     va_end(args);
 
     if (t == NULL) {
@@ -110,7 +110,7 @@ pcaio_task_new(pcaio_entrypoint_t func, int argc, ...) {
 
     /* create a new task*/
     va_start(args, argc);
-    t = task_vnew(func, argc, args);
+    t = task_new(func, argc, args);
     va_end(args);
 
     return t;

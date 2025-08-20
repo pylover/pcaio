@@ -20,6 +20,9 @@
 #define CORE_MASTER_H_
 
 
+/* standard */
+#include <stdatomic.h>
+
 /* local private */
 #include "task.h"
 #include "threadpool.h"
@@ -29,9 +32,10 @@
 
 
 struct master {
-    volatile bool cancel;
+    atomic_bool cancel;
     struct pcaio_config *config;
-    struct taskqueue tasks;
+    atomic_uint tasks;
+    struct taskqueue taskq;
     struct threadpool pool;
 };
 

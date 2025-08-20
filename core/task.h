@@ -46,6 +46,7 @@ struct pcaio_task {
     /* used by taskqueue */
     struct pcaio_task *next;
 
+    /* used by worker */
     size_t stacksize;
     struct ucontext_t context;
     enum taskstatus status;
@@ -57,9 +58,8 @@ struct pcaio_task {
 };
 
 
-
 struct pcaio_task *
-task_vnew(pcaio_entrypoint_t func, int argc, va_list args);
+task_new(pcaio_entrypoint_t func, int argc, va_list args);
 
 
 int
@@ -68,10 +68,6 @@ task_createcontext(struct pcaio_task *t, ucontext_t *successor);
 
 void
 task_free(struct pcaio_task *t);
-
-
-int
-taskqueue_init(struct taskqueue *q);
 
 
 #endif  // CORE_TASK_H_
