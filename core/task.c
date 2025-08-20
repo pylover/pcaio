@@ -28,10 +28,13 @@
 #include "task.h"
 #undef T
 #define T task
-#include "pcaio/queueT.c"
+#include "threadlocalT.c"
 
 /* local public */
 #include "pcaio/pcaio.h"
+#undef T
+#define T task
+#include "pcaio/queueT.c"
 
 
 static void
@@ -127,15 +130,14 @@ task_createcontext(struct pcaio_task *t, ucontext_t *successor) {
 }
 
 
-int
+void
 task_free(struct pcaio_task *t) {
     if (t == NULL) {
-        return -1;
+        return;
     }
 
     if (t->context.uc_stack.ss_sp) {
         free(t->context.uc_stack.ss_sp);
     }
     free(t);
-    return 0;
 }

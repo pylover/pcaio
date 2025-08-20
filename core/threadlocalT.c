@@ -16,27 +16,54 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef INCLUDE_PCAIO_THREADLOCALT_H_
-#define INCLUDE_PCAIO_THREADLOCALT_H_
+/* standard */
+#include <stdio.h>  // NOLINT
+#include <threads.h>
 
 
-/* generic stuff (must included once) */
-#define TL_NAME_PASTER2(x, y) x ## y
-#define TL_NAME_EVALUATOR2(x, y)  TL_NAME_PASTER2(x, y)
-#define TL_NAME_PASTER3(x, y, z) x ## y ## z
-#define TL_NAME_EVALUATOR3(x, y, z)  TL_NAME_PASTER3(x, y, z)
+static tss_t TLSTATICNAME(_storage);
 
 
-#define TL_NAME(n) TL_NAME_EVALUATOR3(threadlocal, TL, n)
-#define TL_TYPE() TL_NAME_EVALUATOR2(TL, _t)
+int
+TLNAME(_init) (TLNAME(_dtor) dtor) {
+    int ret;
+
+    ret = tss_create(&TLSTATICNAME(_storage), (tss_dtor_t)dtor);
+    if (ret != thrd_success) {
+        return -1;
+    }
+
+    return 0;
+}
 
 
-#endif  // INCLUDE_PCAIO_THREADLOCALT_H_
+int
+TLNAME(_set) (TLTYPE() *val) {
+    int ret;
+
+    ret = tss_set(TLSTATICNAME(_storage), val);
+    if (ret != thrd_success) {
+        return -1;
+    }
+
+    return 0;
+}
+
+
+TLTYPE() *
+TLNAME(_get) () {
+    void *ret;
+
+    ret = tss_get(TLSTATICNAME(_storage));
+    if (ret == NULL) {
+        return NULL;
+    }
+
+    return (TLTYPE()*)ret;
+}
 
 
 void
-TL_NAME(_set) (TL_TYPE() *val);
-
-
-TL_TYPE() *
-TL_NAME(_get) ();
+TLNAME(_deinit) () {
+    tss_delete(TLSTATICNAME(_storage));
+}

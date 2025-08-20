@@ -43,6 +43,7 @@ add_library(pcaio SHARED
   $<TARGET_OBJECTS:threadpool>
   $<TARGET_OBJECTS:mutex>
   $<TARGET_OBJECTS:task>
+  $<TARGET_OBJECTS:context>
   $<TARGET_OBJECTS:worker>
   $<TARGET_OBJECTS:core>
 )
@@ -54,8 +55,6 @@ install(FILES
   include/pcaio/pcaio.h 
   include/pcaio/queueT.h 
   include/pcaio/queueT.c 
-  include/pcaio/threadlocalT.h 
-  include/pcaio/threadlocalT.c 
   DESTINATION "include/pcaio"
 )
 

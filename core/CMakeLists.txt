@@ -1,6 +1,7 @@
 add_library(thread OBJECT thread.c thread.h)
 add_library(threadpool OBJECT threadpool.c threadpool.h)
 add_library(mutex OBJECT mutex.c ../include/pcaio/mutex.h)
+add_library(context OBJECT context.c context.h)
 add_library(worker OBJECT worker.c worker.h)
 add_library(task OBJECT task.c task.h)
 add_library(core OBJECT core.c core.h ../include/pcaio/pcaio.h)

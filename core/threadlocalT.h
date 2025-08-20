@@ -16,20 +16,43 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_WORKER_H_
-#define CORE_WORKER_H_
+#ifndef CORE_THREADLOCALT_H_
+#define CORE_THREADLOCALT_H_
 
 
-struct worker *
-worker_new();
+/* standard */
+#include <threads.h>
 
 
-void
-worker_free(struct worker *w);
+/* generic stuff (must included once) */
+#define TLNAME_PASTER2(x, y) x ## y
+#define TLNAME_EVALUATOR2(x, y)  TLNAME_PASTER2(x, y)
+#define TLNAME_PASTER3(x, y, z) x ## y ## z
+#define TLNAME_EVALUATOR3(x, y, z)  TLNAME_PASTER3(x, y, z)
+
+
+#define TLNAME(n) TLNAME_EVALUATOR3(threadlocal, T, n)
+#define TLSTATICNAME(n) TLNAME_EVALUATOR3(_, T, n)
+#define TLTYPE() TLNAME_EVALUATOR2(T, _t)
+
+
+#endif  // CORE_THREADLOCALT_H_
+
+
+typedef void (*TLNAME(_dtor))(TLTYPE() *val);
 
 
 int
-worker(atomic_bool *cancel);
+TLNAME(_init) (TLNAME(_dtor) dtor);
 
 
-#endif  // CORE_WORKER_H_
+int
+TLNAME(_set) (TLTYPE() *val);
+
+
+TLTYPE() *
+TLNAME(_get) ();
+
+
+void
+TLNAME(_deinit) ();

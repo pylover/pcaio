@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core.h"
 #include "task.h"
+#include "context.h"
 #include "worker.h"
 #include "threadpool.h"
 
@@ -83,6 +84,17 @@ pcaio_init(struct pcaio_config *config) {
     }
 
     if (threadpool_init(&p->pool, p->config, (thread_start_t)worker)) {
+        taskqueue_deinit(&p->tasks);
+        free(p);
+        return -1;
+    }
+
+    /* threadlocal storages */
+    if (threadlocaltask_init(task_free)
+            || threadlocalucontext_init(NULL)) {
+        threadpool_deinit(&p->pool);
+        taskqueue_deinit(&p->tasks);
+        free(p);
         return -1;
     }
 
@@ -148,20 +160,38 @@ pcaio_task_new(const char *id, pcaio_entrypoint_t func, int argc, ...) {
 
 int
 pcaio_task_free(struct pcaio_task *t) {
-    // FIXME: do something! to avoid additional function call.
-    return task_free(t);
+    if (t == NULL) {
+        return -1;
+    }
+
+    task_free(t);
+    return 0;
 }
 
 
+/** this function will be called from worker threads.
+ */
 void
 pcaio_task_relax() {
-    struct worker *worker = threadlocalworker_get();
-    struct pcaio_task *task = worker->currenttask;
-    task->status = TS_RELAXING;
-    // asm volatile("": : :"memory");
-    // worker->currenttask = NULL;
+    ucontext_t *ctx;
+    struct pcaio_task *t;
 
-    if (swapcontext(&(task->context), &worker->maincontext)) {
+    /* retrieve the thread local ucontext and task */
+    ctx = threadlocalucontext_get();
+    t = threadlocaltask_get();
+    if ((ctx == NULL) || (t == NULL)) {
+        FATAL("threadlocal*_get");
+    }
+    t->status = TS_RELAXING;
+
+    /* memory barrier to ensure applying above statemetns */
+    asm volatile("": : :"memory");
+
+    /* then clear the thread local task to indicate the worker is idle */
+    threadlocaltask_set(NULL);
+
+    /* hollaaa, do the magic! */
+    if (swapcontext(&(t->context), ctx)) {
         FATAL("swapcontext to main");
     }
 }

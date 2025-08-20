@@ -27,10 +27,13 @@
 typedef struct pcaio_task task_t;
 #undef T
 #define T task
-#include "pcaio/queueT.h"
+#include "threadlocalT.h"
 
 /* local public */
 #include "pcaio/pcaio.h"
+#undef T
+#define T task
+#include "pcaio/queueT.h"
 
 
 enum taskstatus {
@@ -66,7 +69,7 @@ int
 task_createcontext(struct pcaio_task *t, ucontext_t *successor);
 
 
-int
+void
 task_free(struct pcaio_task *t);
 
 

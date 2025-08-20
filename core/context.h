@@ -16,19 +16,17 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#include <stdio.h>  // NOLINT
+#ifndef CORE_CONTEXT_H_
+#define CORE_CONTEXT_H_
 
 
-static TL_TYPE() *_tl;
+/* standard */
+#include <ucontext.h>
 
 
-void
-TL_NAME(_set) (TL_TYPE() *val) {
-    _tl = val;
-}
+#undef T
+#define T ucontext
+#include "threadlocalT.h"
 
 
-TL_TYPE() *
-TL_NAME(_get) () {
-    return _tl;
-}
+#endif  // CORE_CONTEXT_H_

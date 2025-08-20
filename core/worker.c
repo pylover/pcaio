@@ -28,12 +28,6 @@
 #include "task.h"
 #include "worker.h"
 
-/* local public */
-#undef TL
-#define TL worker
-#include "pcaio/threadlocalT.c"
-
-
 // static int
 // _stepforward(struct worker *worker, struct pcaio_task *task) {
 //     if ((task->status == TS_NAIVE) &&
@@ -87,14 +81,6 @@
  */
 int
 worker(atomic_bool *cancel) {
-    // w = malloc(sizeof(struct worker));
-    // if (w == NULL) {
-    //     return -1;
-    // }
-
-    // memset(w, 0, sizeof(struct worker));
-    // return 0;
-
     if (!atomic_is_lock_free(cancel)) {
         FATAL("atomic_bool cancel is not lockfree!");
     }
