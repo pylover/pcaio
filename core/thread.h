@@ -26,11 +26,11 @@
 
 
 typedef thrd_t thread_t;
-typedef int (*thread_start_t) (atomic_bool *cancel);
+typedef int (*thread_start_t) (struct taskqueue *q);
 
 
 int
-thread_new(thread_t *tid, thread_start_t f, atomic_bool *cancel);
+thread_new(thread_t *tid, thread_start_t f, void *arg);
 
 
 int

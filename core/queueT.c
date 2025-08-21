@@ -29,6 +29,11 @@ QNAME(queue_init) (struct QNAME(queue) *q) {
         return -1;
     }
 
+    if (condition_init(&q->condition)) {
+        mutex_deinit(&q->mutex);
+        return -1;
+    }
+
     q->head = NULL;
     q->tail = NULL;
     return 0;
@@ -38,6 +43,7 @@ QNAME(queue_init) (struct QNAME(queue) *q) {
 void
 QNAME(queue_deinit) (struct QNAME(queue) *q) {
     mutex_deinit(&q->mutex);
+    condition_deinit(&q->condition);
     q->head = NULL;
     q->tail = NULL;
 }
@@ -58,23 +64,54 @@ QNAME(queue_push) (struct QNAME(queue) *q, QELTYP() *v) {
 
     v->next = NULL;
 
+    condition_signal(&q->condition);
+    mutex_release(&q->mutex);
+}
+
+
+void
+QNAME(queue_pushall) (struct QNAME(queue) *q, QELTYP() *v[], size_t count) {
+    int i;
+
+    /* some guards */
+    if (count == 0) {
+        return;
+    }
+
+    /* take the ownership */
+    mutex_acquire(&q->mutex);
+
+    if (q->tail == NULL) {
+        /* queue is empty */
+        q->tail = v[0];
+        q->head = v[0];
+    }
+
+    /* chain the rest */
+    for (i = 1; i < count, i++) {
+        q->tail->next = v[i];
+        q->tail = v[i];
+    }
+
+    q->tail->next = NULL;
+
+    condition_broadcast(&q->condition);
     mutex_release(&q->mutex);
 }
 
 
 int
-QNAME(queue_pop) (struct QNAME(queue) *q, QELTYP() **out) {
+QNAME(queue_waitpop) (struct QNAME(queue) *q, QELTYP() **out) {
     int ret = 0;
     QELTYP() *o;
 
     mutex_acquire(&q->mutex);
-    if (q->head == NULL) {
+    if ((q->head == NULL) && (condition_wait(&q->condition, &q->mutex))) {
         ret = -1;
         goto done;
     }
 
     o = q->head;
-
     if (o->next == NULL) {
         q->head = NULL;
         q->tail = NULL;

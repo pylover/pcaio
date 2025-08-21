@@ -21,7 +21,7 @@
 
 
 int
-worker(atomic_bool *cancel);
+worker(struct taskqueue *q);
 
 
 #endif  // CORE_WORKER_H_

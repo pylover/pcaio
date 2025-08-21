@@ -37,6 +37,7 @@
 struct QNAME(queue) {
     QELTYP() *head;
     QELTYP() *tail;
+    condition_t condition;
     mutex_t mutex;
 };
 
@@ -53,5 +54,9 @@ void
 QNAME(queue_push) (struct QNAME(queue) *q, QELTYP() *v);
 
 
+void
+QNAME(queue_pushall) (struct QNAME(queue) *q, QELTYP() *v[], size_t count);
+
+
 int
-QNAME(queue_pop) (struct QNAME(queue) *q, QELTYP() **out);
+QNAME(queue_waitpop) (struct QNAME(queue) *q, QELTYP() **out);

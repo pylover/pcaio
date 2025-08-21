@@ -52,12 +52,12 @@ master_init(struct pcaio_config *config) {
         return -1;
     }
 
-    if (taskqueue_init(&m->taskq)) {
+    if (taskqueue_init(&m->taskq, task_free)) {
         free(m);
         return -1;
     }
 
-    if (threadpool_init(&m->pool, config, (thread_start_t)worker)) {
+    if (threadpool_init(&m->pool, config, worker, &m->taskq)) {
         taskqueue_deinit(&m->taskq);
         free(m);
         return -1;
@@ -112,18 +112,6 @@ master_report(struct pcaio_task *t) {
         atomic_fetch_add(&_master->tasks, 1);
     }
     taskqueue_push(&_master->taskq, t);
-}
-
-
-struct pcaio_task *
-master_assign() {
-    struct pcaio_task *t;
-
-    if (taskqueue_pop(&_master->taskq, &t)) {
-        return NULL;
-    }
-
-    return t;
 }
 
 

@@ -20,9 +20,6 @@
 #define CORE_MASTER_H_
 
 
-/* standard */
-#include <stdatomic.h>
-
 /* local private */
 #include "task.h"
 #include "threadpool.h"
@@ -50,10 +47,6 @@ master_deinit();
 
 void
 master_cancel();
-
-
-struct pcaio_task *
-master_assign();
 
 
 void

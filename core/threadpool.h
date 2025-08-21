@@ -19,6 +19,8 @@
 #ifndef CORE_THREADPOOL_H_
 #define CORE_THREADPOOL_H_
 
+/* standard */
+#include <stdatomic.h>
 
 /* local private */
 #include "thread.h"
@@ -27,18 +29,12 @@
 #include "pcaio/pcaio.h"
 
 
-struct thread {
-    thread_t id;
-    atomic_bool cancel;
-};
-
-
 struct threadpool {
     thread_start_t starter;
+    struct taskqueue *taskq;
     unsigned short min;
     unsigned short max;
-    unsigned short count;
-    struct thread *threads;
+    atomic_ushort count;
 };
 
 
@@ -49,10 +45,6 @@ struct threadpool {
 int
 threadpool_init(struct threadpool *p, struct pcaio_config *c,
         thread_start_t starter);
-
-
-int
-threadpool_deinit(struct threadpool *p);
 
 
 int

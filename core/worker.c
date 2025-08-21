@@ -43,6 +43,8 @@ _stepforward(struct pcaio_task *t, ucontext_t *landing) {
     if (t->status == TS_TERMINATING) {
         task_free(t);
         master_tasks_decrease();
+        /* then clear the thread local task to indicate the worker is idle */
+        threadlocaltask_set(NULL);
         return 1;
     }
 
@@ -54,30 +56,19 @@ _stepforward(struct pcaio_task *t, ucontext_t *landing) {
  * then immediately returns 0 if enrything was ok. otherwise -1.
  */
 int
-worker(atomic_bool *cancel) {
+worker(struct taskqueue *q) {
     static ucontext_t landing;
     struct pcaio_task *t;
-    thread_t tid;
-
-    if (!atomic_is_lock_free(cancel)) {
-        FATAL("atomic_bool is not lockfree!");
-    }
 
     if (threadlocalucontext_set(&landing)) {
         FATAL("threadlocalucontext_set");
     }
 
-    tid = thrd_current();
-    while (!atomic_load(cancel)) {
-        /* get a task from master to work on */
-        t = master_assign();
-        if (t == NULL) {
-            /* task queue is empty, goto deep sleep and continue to pop the
-             * next task after wakeup */
-            sleep(CONFIG_PCAIO_WORKER_DEEPSLEEP_S);
-            continue;
-        }
+    /* tell the master a new worker is joined */
+    master_worker_hired();
 
+    /* wait, pop, calculate and start over */
+    while (taskqueue_pop(q, &t) == 0) {
         /* work on as short as possible */
         if (_stepforward(t, &landing)) {
             /* task is terminated and disposed. so, do not schedule it again
@@ -86,11 +77,15 @@ worker(atomic_bool *cancel) {
         }
 
         /* re-schedule the task */
-        master_report(t);
+        taskqueue_push(q, t);
     }
 
-    INFO("worker: %lu, canceled", tid);
+    /* master is telling me to die as soon as possible. */
+    INFO("worker: %lu is dying...", thrd_current());
     threadlocaltask_delete();
     threadlocalucontext_delete();
+
+    /* tell the master on a worker is gone. */
+    master_worker_gone();
     return 0;
 }
