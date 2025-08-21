@@ -45,32 +45,32 @@ _worker(int argc, char *argv[]) {
 }
 
 
-// void
-// test_api_advanced() {
-//     struct pcaio_task *t;
-//
-//     eqint(0, pcaio_init(NULL));
-//
-//     t = pcaio_task_new("w #1", (pcaio_entrypoint_t)worker, 1, "foo");
-//     isnotnull(t);
-//     eqint(0, pcaio_task_schedule(t));
-//
-//     t = pcaio_task_new("w #2", (pcaio_entrypoint_t)worker, 1, "thud");
-//     isnotnull(t);
-//     eqint(0, pcaio_task_schedule(t));
-//
-//     hits = 0;
-//     memset(logs, 0, sizeof(int) * 6);
-//     eqint(0, pcaio());
-//     eqint(0, pcaio_deinit());
-//     eqint(6, hits);
-//     eqint(3, logs[0]);
-//     eqint(4, logs[1]);
-//     eqint(9, logs[2]);
-//     eqint(12, logs[3]);
-//     eqint(16, logs[4]);
-//     eqint(19, logs[5]);
-// }
+void
+test_api_advanced() {
+    struct pcaio_task *t;
+
+    eqint(0, pcaio_init(NULL));
+
+    t = pcaio_task_new((pcaio_entrypoint_t)_worker, 1, "foo");
+    isnotnull(t);
+    eqint(0, pcaio_task_schedule(t));
+
+    t = pcaio_task_new((pcaio_entrypoint_t)_worker, 1, "thud");
+    isnotnull(t);
+    eqint(0, pcaio_task_schedule(t));
+
+    hits = 0;
+    memset(logs, 0, sizeof(int) * 6);
+    eqint(0, pcaio());
+    eqint(0, pcaio_deinit());
+    eqint(6, hits);
+    eqint(3, logs[0]);
+    eqint(4, logs[1]);
+    eqint(9, logs[2]);
+    eqint(12, logs[3]);
+    eqint(16, logs[4]);
+    eqint(19, logs[5]);
+}
 
 
 void
@@ -97,5 +97,5 @@ test_api_simple() {
 int
 main() {
     test_api_simple();
-    // test_api_advanced();
+    test_api_advanced();
 }

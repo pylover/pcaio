@@ -97,7 +97,7 @@ _scaleup(struct threadpool *tp, unsigned short count) {
     pthread_mutex_lock(&tp->mutex);
     for (i = 0; i < count; i++) {
         err = pthread_create(&tp->threads[tp->count + i], NULL,
-                    (pthread_start_t)tp->starter, &tp->taskq);
+                    (pthread_start_t)tp->starter, tp->taskq);
         if (err) {
             errno = err;
             ret = -1;
@@ -118,6 +118,7 @@ _scaledown(struct threadpool *tp, unsigned short count) {
     int ret = 0;
     int err;
     int i;
+    int target;
 
     if (tp == NULL) {
         return -1;
@@ -130,8 +131,9 @@ _scaledown(struct threadpool *tp, unsigned short count) {
     pthread_mutex_lock(&tp->mutex);
 
     /* send cancel request */
-    for (i = 0; i < count; i++) {
-        err = pthread_cancel(tp->threads[tp->count + i]);
+    target = tp->count - count;
+    for (i = tp->count - 1; i >= target; i--) {
+        err = pthread_cancel(tp->threads[i]);
         if (err) {
             errno = err;
             ret = -1;
@@ -140,8 +142,8 @@ _scaledown(struct threadpool *tp, unsigned short count) {
     }
 
     /* wait for them */
-    for (i = 0; i < count; i++) {
-        err = pthread_join(tp->threads[tp->count + i], &status);
+    for (i = tp->count - 1; i >= target; i--) {
+        err = pthread_join(tp->threads[i], &status);
         if (err) {
             errno = err;
             ret = -1;

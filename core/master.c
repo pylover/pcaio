@@ -148,5 +148,5 @@ master() {
     }
 
     INFO("all workers have been shut down.");
-    return threadpool_deinit(tp);
+    return 0;
 }

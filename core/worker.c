@@ -65,7 +65,7 @@ worker(struct taskqueue *q) {
     }
 
     /* wait, pop, calculate and start over */
-    while (taskqueue_pop(q, &t, true)) {
+    while (taskqueue_pop(q, &t, QWAIT) == 0) {
         /* work on as short as possible */
         if (_stepforward(t, &landing)) {
             /* task is terminated and disposed. so, do not schedule it again
@@ -81,6 +81,5 @@ worker(struct taskqueue *q) {
     INFO("worker: %lu is dying...", pthread_self());
     threadlocaltask_delete();
     threadlocalucontext_delete();
-
     return 0;
 }
