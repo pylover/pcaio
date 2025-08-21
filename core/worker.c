@@ -36,11 +36,13 @@
 
 
 static void
-_cleanup(void *) {
+_cleanup(struct taskqueue *q) {
     /* master is telling me to die as soon as possible. */
     INFO("worker: 0x%lx is dying...", pthread_self());
+    pthread_mutex_unlock(&q->mutex);
     threadlocaltask_delete();
     threadlocalucontext_delete();
+    INFO("worker: 0x%lx has died", pthread_self());
 }
 
 
@@ -77,7 +79,7 @@ worker(struct taskqueue *q) {
     }
 
     /* register the cleanup handler */
-    pthread_cleanup_push(_cleanup, NULL);
+    pthread_cleanup_push((void(*)(void*))_cleanup, q);
 
     /* wait, pop, calculate and start over */
     while (taskqueue_pop(q, &t, QWAIT) == 0) {

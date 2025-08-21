@@ -27,9 +27,16 @@
 #include <pcaio/pcaio.h>
 
 
+static struct pcaio_config
+_config = {
+    .workers_min = 2,
+    .workers_max = 2,
+};
+
+
 int
 main() {
-    pcaio_init(NULL);
+    pcaio_init(&_config);
     pcaio();
     pcaio_deinit();
     return EXIT_SUCCESS;

@@ -12,18 +12,18 @@ foreach (t IN LISTS examples)
   target_include_directories(${t} PUBLIC "${PROJECT_BINARY_DIR}")
 
   add_custom_target(${t}_exec 
-    COMMAND ./${t} $$CLI_ARGS
+    COMMAND ./${t}
     DEPENDS ${t}
   )
   add_custom_target(${t}_debug 
     COMMAND gdb 
-    DEPENDS ${t}
       --command=${PROJECT_SOURCE_DIR}/examples/${t}.gdb
-      ./${t} $$CLI_ARGS
+      ./${t} 
+    DEPENDS ${t}
   )
 
   add_custom_target(${t}_profile
-    COMMAND "valgrind" ${VALGRIND_FLAGS} ./${t} $$CLI_ARGS
+    COMMAND "valgrind" ${VALGRIND_FLAGS} ./${t}
     DEPENDS ${t}
   )
 endforeach ()

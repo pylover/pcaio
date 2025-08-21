@@ -93,14 +93,15 @@ _scaleup(struct threadpool *tp, unsigned short count) {
     int err;
     int ret = 0;
     int i;
+    int target = tp->count + count;
 
     if (tp == NULL) {
         return -1;
     }
 
     pthread_mutex_lock(&tp->mutex);
-    for (i = 0; i < count; i++) {
-        err = pthread_create(&tp->threads[tp->count + i], NULL,
+    for (i = tp->count; i < target; i++) {
+        err = pthread_create(&tp->threads[i], NULL,
                     (pthread_start_t)tp->starter, tp->taskq);
         if (err) {
             errno = err;
