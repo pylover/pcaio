@@ -38,11 +38,9 @@
 static void
 _cleanup(struct taskqueue *q) {
     /* master is telling me to die as soon as possible. */
-    INFO("worker: 0x%lx is dying...", pthread_self());
     pthread_mutex_unlock(&q->mutex);
     threadlocaltask_delete();
     threadlocalucontext_delete();
-    INFO("worker: 0x%lx has died", pthread_self());
 }
 
 
@@ -71,7 +69,7 @@ _stepforward(struct pcaio_task *t, ucontext_t *landing) {
  */
 int
 worker(struct taskqueue *q) {
-    static ucontext_t landing;
+    ucontext_t landing;
     struct pcaio_task *t;
 
     if (threadlocalucontext_set(&landing)) {

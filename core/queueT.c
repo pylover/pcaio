@@ -117,17 +117,17 @@ QNAME(queue_pop) (struct QNAME(queue) *q, QELTYP() **out, int flags) {
     QELTYP() *o;
 
     pthread_mutex_lock(&q->mutex);
-    if (q->head == NULL) {
-        if (flags & QWAIT) {
+    if (flags & QWAIT) {
+        while (q->head == NULL) {
             if (pthread_cond_wait(&q->condition, &q->mutex)) {
                 ret = -1;
                 goto done;
             }
         }
-        else {
-            ret = -1;
-            goto done;
-        }
+    }
+    else if (q->head == NULL) {
+        ret = -1;
+        goto done;
     }
 
     o = q->head;

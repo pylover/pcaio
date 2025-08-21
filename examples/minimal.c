@@ -27,17 +27,35 @@
 #include <pcaio/pcaio.h>
 
 
+#define TASKS_MAX 200
+#define WORKERS 2
+
+
 static struct pcaio_config
 _config = {
-    .workers_min = 2,
-    .workers_max = 2,
+    .workers_min = WORKERS,
+    .workers_max = WORKERS,
 };
+
+
+static int
+_task(int argc, void *argv[]) {
+    pcaio_currenttask_relax();
+    pcaio_currenttask_relax();
+    return 0;
+}
 
 
 int
 main() {
+    int i;
+
     pcaio_init(&_config);
+    for (i = 0; i < TASKS_MAX; i++) {
+        pcaio_task_newschedule(_task, 0);
+    }
     pcaio();
     pcaio_deinit();
+    INFO("%ld tasks has been completed successfully", TASKS_MAX);
     return EXIT_SUCCESS;
 }

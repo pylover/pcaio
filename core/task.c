@@ -45,9 +45,6 @@ _taskmain(struct pcaio_task *t) {
     if (status) {
         ERROR("task %p exited with status: %d", t, status);
     }
-    else {
-        INFO("task %p terminated successfully", t);
-    }
 
     t->status = TS_TERMINATING;
     ctx = threadlocalucontext_get();
