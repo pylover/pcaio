@@ -21,6 +21,9 @@
 #include <unistd.h>
 #include <ucontext.h>
 
+/* posix */
+#include <pthread.h>
+
 /* thirdparty */
 #include <clog.h>
 
@@ -30,6 +33,15 @@
 #include "master.h"
 #include "task.h"
 #include "worker.h"
+
+
+static void
+_cleanup(void *) {
+    /* master is telling me to die as soon as possible. */
+    INFO("worker: 0x%lx is dying...", pthread_self());
+    threadlocaltask_delete();
+    threadlocalucontext_delete();
+}
 
 
 static int
@@ -64,6 +76,9 @@ worker(struct taskqueue *q) {
         FATAL("threadlocalucontext_set");
     }
 
+    /* register the cleanup handler */
+    pthread_cleanup_push(_cleanup, NULL);
+
     /* wait, pop, calculate and start over */
     while (taskqueue_pop(q, &t, QWAIT) == 0) {
         /* work on as short as possible */
@@ -77,9 +92,6 @@ worker(struct taskqueue *q) {
         taskqueue_push(q, t);
     }
 
-    /* master is telling me to die as soon as possible. */
-    INFO("worker: %lu is dying...", pthread_self());
-    threadlocaltask_delete();
-    threadlocalucontext_delete();
+    pthread_cleanup_pop(true);
     return 0;
 }

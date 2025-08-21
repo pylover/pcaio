@@ -155,11 +155,11 @@ _scaledown(struct threadpool *tp, unsigned short count) {
         }
 
         if (status == PTHREAD_CANCELED) {
-            INFO("thread: %lu has been canceled successfully.",
+            INFO("thread: 0x%lx has been canceled successfully.",
                     pthread_self());
         }
         else {
-            INFO("thread: %lu exitted with status: %ld", pthread_self(),
+            INFO("thread: 0x%lx exitted with status: %ld", pthread_self(),
                     (long)status);
         }
 
