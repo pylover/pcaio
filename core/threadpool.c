@@ -43,7 +43,11 @@ threadpool_init(struct threadpool *tp, struct pcaio_config *c,
     int err;
     pthread_t *thrds;
 
-    thrds = calloc(tp->min, sizeof(pthread_t));
+    if (tp == NULL) {
+        return -1;
+    }
+
+    thrds = calloc(c->workers_max, sizeof(pthread_t));
     if (thrds == NULL) {
         return -1;
     }

@@ -32,10 +32,6 @@ struct pcaio_config {
 };
 
 
-struct pcaio_config *
-pcaio_config_default();
-
-
 int
 pcaio_init(struct pcaio_config *config);
 

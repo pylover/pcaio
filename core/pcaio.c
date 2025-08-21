@@ -40,25 +40,17 @@
 #include "pcaio/pcaio.h"
 
 
-struct pcaio_config *
-pcaio_config_default() {
-    struct pcaio_config *c;
-
-    c = malloc(sizeof(struct pcaio_config));
-    if (c == NULL) {
-        return NULL;
-    }
-
-    c->workers_min = 1;
-    c->workers_max = 1;
-    return c;
-}
+static struct pcaio_config
+_defaultconfig = {
+    .workers_min = 1,
+    .workers_max = 1,
+};
 
 
 int
 pcaio_init(struct pcaio_config *config) {
     if (config == NULL) {
-        config = pcaio_config_default();
+        config = &_defaultconfig;
     }
     else {
         config = config;
@@ -174,6 +166,11 @@ int
 pcaio() {
     struct sigaction sigact;
     sigact.sa_handler = _signal;
+    sigact.sa_flags = 0;
+
+    if (sigemptyset(&sigact.sa_mask)) {
+        ERROR("sigemptyset");
+    }
 
     if (sigaction(SIGINT, &sigact, NULL)) {
         ERROR("sigaction");
