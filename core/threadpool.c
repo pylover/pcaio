@@ -19,6 +19,7 @@
 /* standard */
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 /* posix */
 #include <pthread.h>
@@ -33,13 +34,24 @@
 #include "pcaio/pcaio.h"
 
 
+typedef void *(*pthread_start_t)(void *);
+
+
 int
 threadpool_init(struct threadpool *tp, struct pcaio_config *c,
         worker_t starter, struct taskqueue *q) {
+    int err;
     pthread_t *thrds;
 
     thrds = calloc(tp->min, sizeof(pthread_t));
     if (thrds == NULL) {
+        return -1;
+    }
+
+    err = pthread_mutex_init(&tp->mutex, NULL);
+    if (err) {
+        free(thrds);
+        errno = err;
         return -1;
     }
 
@@ -63,6 +75,7 @@ threadpool_deinit(struct threadpool *tp) {
         return -1;
     }
 
+    pthread_mutex_destroy(&tp->mutex);
     if (tp->threads) {
         free(tp->threads);
     }
@@ -71,48 +84,101 @@ threadpool_deinit(struct threadpool *tp) {
 }
 
 
-static void
-_fire(struct threadpool *tp, size_t count) {
-    // TODO: implement
-}
-
-
-int
-threadpool_cancelall(struct threadpool *tp) {
-    // TODO: implement
-    return -1;
-}
-
-
-int
-threadpool_tune(struct threadpool *tp, unsigned short count) {
+static int
+_scaleup(struct threadpool *tp, unsigned short count) {
+    int err;
+    int ret = 0;
     int i;
-    unsigned short backup;
 
     if (tp == NULL) {
         return -1;
     }
 
-    backup = tp->count;
-    if (tp->count > count) {
-        _fire(tp, tp->count - count);
-        return 0;
-    }
-
-    for (i = tp->count; i < count; i++) {
-        if (pthread_create(&tp->threads[i], NULL,
-                    (void*(*)(void*))tp->starter, &tp->taskq)) {
-            ERROR("pthread_create");
-            goto rollback;
+    pthread_mutex_lock(&tp->mutex);
+    for (i = 0; i < count; i++) {
+        err = pthread_create(&tp->threads[tp->count + i], NULL,
+                    (pthread_start_t)tp->starter, &tp->taskq);
+        if (err) {
+            errno = err;
+            ret = -1;
+            goto done;
         }
         atomic_fetch_add(&tp->count, 1);
     }
 
-    return 0;
+done:
+    pthread_mutex_unlock(&tp->mutex);
+    return ret;
+}
 
-rollback:
-    if (threadpool_tune(tp, backup)) {
-        ERROR("rollback: threadpool_tune");
+
+static int
+_scaledown(struct threadpool *tp, unsigned short count) {
+    void *status;
+    int ret = 0;
+    int err;
+    int i;
+
+    if (tp == NULL) {
+        return -1;
     }
-    return -1;
+
+    if (count > tp->count) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&tp->mutex);
+
+    /* send cancel request */
+    for (i = 0; i < count; i++) {
+        err = pthread_cancel(tp->threads[tp->count + i]);
+        if (err) {
+            errno = err;
+            ret = -1;
+            goto done;
+        }
+    }
+
+    /* wait for them */
+    for (i = 0; i < count; i++) {
+        err = pthread_join(tp->threads[tp->count + i], &status);
+        if (err) {
+            errno = err;
+            ret = -1;
+            goto done;
+        }
+
+        if (status == PTHREAD_CANCELED) {
+            INFO("thread: %lu has been canceled successfully.",
+                    pthread_self());
+        }
+        else {
+            INFO("thread: %lu exitted with status: %ld", pthread_self(),
+                    (long)status);
+        }
+
+        atomic_fetch_sub(&tp->count, 1);
+    }
+
+done:
+    pthread_mutex_unlock(&tp->mutex);
+    return ret;
+}
+
+
+int
+threadpool_scale(struct threadpool *tp, unsigned short count) {
+    if (tp == NULL) {
+        return -1;
+    }
+
+    if (tp->count > count) {
+        return _scaledown(tp, tp->count - count);
+    }
+
+    if (tp->count < count) {
+        return _scaleup(tp, count - tp->count);
+    }
+
+    return 0;
 }

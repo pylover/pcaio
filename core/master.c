@@ -124,15 +124,16 @@ master_cancel() {
 
 int
 master() {
+    struct threadpool *tp = &_master->pool;
+
     if (_master == NULL) {
         errno = EINVAL;
         ERROR("call pcaio_init() once before the %s().", __func__);
         return -1;
     }
 
-    if (threadpool_minimum(&_master->pool)) {
-        errno = ENOMEM;
-        ERROR("threadpool_startall");
+    if (threadpool_scale(tp, tp->min)) {
+        ERROR("threadpool_scale");
         return -1;
     }
 
@@ -140,6 +141,12 @@ master() {
         sleep(.3);
     }
 
-    INFO("canceling all workers...");
-    return threadpool_cancelall(&_master->pool);
+    INFO("shutting down all workers...");
+    if (threadpool_scale(tp, 0)) {
+        ERROR("threadpool_scale");
+        return -1;
+    }
+
+    INFO("all workers have been shut down.");
+    return threadpool_deinit(tp);
 }

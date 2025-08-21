@@ -39,6 +39,7 @@ struct threadpool {
     unsigned short max;
     atomic_ushort count;
     pthread_t *threads;
+    pthread_mutex_t mutex;
 };
 
 
@@ -56,11 +57,7 @@ threadpool_deinit(struct threadpool *tp);
 
 
 int
-threadpool_tune(struct threadpool *p, unsigned short count);
-
-
-int
-threadpool_cancelall(struct threadpool *tp);
+threadpool_scale(struct threadpool *p, unsigned short count);
 
 
 #endif  // CORE_THREADPOOL_H_
