@@ -20,6 +20,13 @@
 #define CORE_WORKER_H_
 
 
+/* local private */
+#include "task.h"
+
+
+typedef int (*worker_t) (struct taskqueue *q);
+
+
 int
 worker(struct taskqueue *q);
 

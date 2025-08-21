@@ -53,7 +53,7 @@ test_queueT() {
     eqptr(q.head, q.tail);
     eqptr(q.head, &foo73);
 
-    eqint(0, fooqueue_pop(&q, &out));
+    eqint(0, fooqueue_pop(&q, &out, 0));
     eqint(73, out->val);
     isnull(q.head);
     isnull(q.tail);
@@ -69,11 +69,11 @@ test_queueT() {
     eqptr(foo74.next, &foo75);
     isnull(foo75.next);
 
-    eqint(0, fooqueue_pop(&q, &out));
+    eqint(0, fooqueue_pop(&q, &out, 0));
     eqint(73, out->val);
-    eqint(0, fooqueue_pop(&q, &out));
+    eqint(0, fooqueue_pop(&q, &out, 0));
     eqint(74, out->val);
-    eqint(0, fooqueue_pop(&q, &out));
+    eqint(0, fooqueue_pop(&q, &out, 0));
     eqint(75, out->val);
 
     isnull(q.head);

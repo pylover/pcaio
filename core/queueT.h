@@ -20,7 +20,8 @@
 #define CORE_QUEUET_H_
 
 
-#include "pcaio/mutex.h"
+/* posix */
+#include <pthread.h>
 
 
 /* generic stuff (must included once) */
@@ -30,6 +31,10 @@
 #define QELTYP() QNAME(_t)
 
 
+/* flags */
+#define QWAIT 0x1
+
+
 #endif  // CORE_QUEUET_H_
 
 
@@ -37,8 +42,8 @@
 struct QNAME(queue) {
     QELTYP() *head;
     QELTYP() *tail;
-    condition_t condition;
-    mutex_t mutex;
+    pthread_cond_t condition;
+    pthread_mutex_t mutex;
 };
 
 
@@ -59,4 +64,4 @@ QNAME(queue_pushall) (struct QNAME(queue) *q, QELTYP() *v[], size_t count);
 
 
 int
-QNAME(queue_waitpop) (struct QNAME(queue) *q, QELTYP() **out);
+QNAME(queue_pop) (struct QNAME(queue) *q, QELTYP() **out, int flags);

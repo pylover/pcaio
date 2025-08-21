@@ -20,6 +20,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+/* posix */
+#include <pthread.h>
+
 /* thirdparty */
 #include <clog.h>
 
@@ -32,7 +35,15 @@
 
 int
 threadpool_init(struct threadpool *tp, struct pcaio_config *c,
-        thread_start_t starter, struct taskqueue *q) {
+        worker_t starter, struct taskqueue *q) {
+    pthread_t *thrds;
+
+    thrds = calloc(tp->min, sizeof(pthread_t));
+    if (thrds == NULL) {
+        return -1;
+    }
+
+    tp->threads = thrds;
     tp->starter = starter;
     tp->taskq = q;
     tp->min = c->workers_min;
@@ -42,30 +53,41 @@ threadpool_init(struct threadpool *tp, struct pcaio_config *c,
 }
 
 
-static void
-_fire(struct threadpool *tp, size_t count) {
-    taskqueue_headpush(tp->taskq, NULL);
-}
-
-
 int
-threadpool_cancelall(struct threadpool *tp) {
-    while (tp->count) {
-        if (_cancelone(tp)) {
-            return -1;
-        }
+threadpool_deinit(struct threadpool *tp) {
+    if (tp == NULL) {
+        return -1;
+    }
+
+    if (tp->count) {
+        return -1;
+    }
+
+    if (tp->threads) {
+        free(tp->threads);
     }
 
     return 0;
 }
 
 
+static void
+_fire(struct threadpool *tp, size_t count) {
+    // TODO: implement
+}
+
+
+int
+threadpool_cancelall(struct threadpool *tp) {
+    // TODO: implement
+    return -1;
+}
+
+
 int
 threadpool_tune(struct threadpool *tp, unsigned short count) {
     int i;
-    struct thread *t;
     unsigned short backup;
-    thread_t tid;
 
     if (tp == NULL) {
         return -1;
@@ -78,8 +100,9 @@ threadpool_tune(struct threadpool *tp, unsigned short count) {
     }
 
     for (i = tp->count; i < count; i++) {
-        if (thread_new(&tid, tp->starter, &tp->taskq)) {
-            ERROR("thread_new");
+        if (pthread_create(&tp->threads[i], NULL,
+                    (void*(*)(void*))tp->starter, &tp->taskq)) {
+            ERROR("pthread_create");
             goto rollback;
         }
         atomic_fetch_add(&tp->count, 1);

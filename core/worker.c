@@ -64,11 +64,8 @@ worker(struct taskqueue *q) {
         FATAL("threadlocalucontext_set");
     }
 
-    /* tell the master a new worker is joined */
-    master_worker_hired();
-
     /* wait, pop, calculate and start over */
-    while (taskqueue_pop(q, &t) == 0) {
+    while (taskqueue_pop(q, &t, true)) {
         /* work on as short as possible */
         if (_stepforward(t, &landing)) {
             /* task is terminated and disposed. so, do not schedule it again
@@ -81,11 +78,9 @@ worker(struct taskqueue *q) {
     }
 
     /* master is telling me to die as soon as possible. */
-    INFO("worker: %lu is dying...", thrd_current());
+    INFO("worker: %lu is dying...", pthread_self());
     threadlocaltask_delete();
     threadlocalucontext_delete();
 
-    /* tell the master on a worker is gone. */
-    master_worker_gone();
     return 0;
 }

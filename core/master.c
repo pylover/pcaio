@@ -52,7 +52,7 @@ master_init(struct pcaio_config *config) {
         return -1;
     }
 
-    if (taskqueue_init(&m->taskq, task_free)) {
+    if (taskqueue_init(&m->taskq)) {
         free(m);
         return -1;
     }

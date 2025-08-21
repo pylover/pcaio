@@ -22,19 +22,23 @@
 /* standard */
 #include <stdatomic.h>
 
+/* posix */
+#include <pthread.h>
+
 /* local private */
-#include "thread.h"
+#include "worker.h"
 
 /* local public */
 #include "pcaio/pcaio.h"
 
 
 struct threadpool {
-    thread_start_t starter;
+    worker_t starter;
     struct taskqueue *taskq;
     unsigned short min;
     unsigned short max;
     atomic_ushort count;
+    pthread_t *threads;
 };
 
 
@@ -44,7 +48,11 @@ struct threadpool {
 
 int
 threadpool_init(struct threadpool *p, struct pcaio_config *c,
-        thread_start_t starter);
+        worker_t starter, struct taskqueue *q);
+
+
+int
+threadpool_deinit(struct threadpool *tp);
 
 
 int

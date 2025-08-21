@@ -18,18 +18,24 @@
  */
 /* standard */
 #include <stdio.h>  // NOLINT
-#include <threads.h>
+#include <errno.h>
+
+/* posix */
+#include <pthread.h>
 
 
-static tss_t TLSTATICNAME(_storage);
+static pthread_key_t
+TLSTATICNAME(_storage);
 
 
 int
 TLNAME(_init) (TLNAME(_dtor) dtor) {
-    int ret;
+    int err;
 
-    ret = tss_create(&TLSTATICNAME(_storage), (tss_dtor_t)dtor);
-    if (ret != thrd_success) {
+    err = pthread_key_create(&TLSTATICNAME(_storage),
+            (void (*)(void *))dtor);
+    if (err) {
+        errno = err;
         return -1;
     }
 
@@ -39,10 +45,11 @@ TLNAME(_init) (TLNAME(_dtor) dtor) {
 
 int
 TLNAME(_set) (TLTYPE() *val) {
-    int ret;
+    int err;
 
-    ret = tss_set(TLSTATICNAME(_storage), val);
-    if (ret != thrd_success) {
+    err = pthread_setspecific(TLSTATICNAME(_storage), val);
+    if (err) {
+        errno = err;
         return -1;
     }
 
@@ -52,18 +59,18 @@ TLNAME(_set) (TLTYPE() *val) {
 
 TLTYPE() *
 TLNAME(_get) () {
-    void *ret;
+    void *obj;
 
-    ret = tss_get(TLSTATICNAME(_storage));
-    if (ret == NULL) {
+    obj = pthread_getspecific(TLSTATICNAME(_storage));
+    if (obj == NULL) {
         return NULL;
     }
 
-    return (TLTYPE()*)ret;
+    return (TLTYPE()*)obj;
 }
 
 
 void
 TLNAME(_delete) () {
-    tss_delete(TLSTATICNAME(_storage));
+    pthread_key_delete(TLSTATICNAME(_storage));
 }

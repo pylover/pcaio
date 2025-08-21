@@ -16,21 +16,32 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
+/* standard */
 #include <stdint.h>  // NOLINT
+#include <errno.h>
+
+/* posix */
+#include <pthread.h>
 
 
 int
 QNAME(queue_init) (struct QNAME(queue) *q) {
+    int err;
+
     if (q == NULL) {
         return -1;
     }
 
-    if (mutex_init(&q->mutex) != thrd_success) {
+    err = pthread_mutex_init(&q->mutex, NULL);
+    if (err) {
+        errno = err;
         return -1;
     }
 
-    if (condition_init(&q->condition)) {
-        mutex_deinit(&q->mutex);
+    err = pthread_cond_init(&q->condition, NULL);
+    if (err) {
+        pthread_mutex_destroy(&q->mutex);
+        errno = err;
         return -1;
     }
 
@@ -42,8 +53,8 @@ QNAME(queue_init) (struct QNAME(queue) *q) {
 
 void
 QNAME(queue_deinit) (struct QNAME(queue) *q) {
-    mutex_deinit(&q->mutex);
-    condition_deinit(&q->condition);
+    pthread_mutex_destroy(&q->mutex);
+    pthread_cond_destroy(&q->condition);
     q->head = NULL;
     q->tail = NULL;
 }
@@ -51,7 +62,7 @@ QNAME(queue_deinit) (struct QNAME(queue) *q) {
 
 void
 QNAME(queue_push) (struct QNAME(queue) *q, QELTYP() *v) {
-    mutex_acquire(&q->mutex);
+    pthread_mutex_lock(&q->mutex);
 
     if (q->tail == NULL) {
         q->head = v;
@@ -64,8 +75,8 @@ QNAME(queue_push) (struct QNAME(queue) *q, QELTYP() *v) {
 
     v->next = NULL;
 
-    condition_signal(&q->condition);
-    mutex_release(&q->mutex);
+    pthread_cond_signal(&q->condition);
+    pthread_mutex_unlock(&q->mutex);
 }
 
 
@@ -79,7 +90,7 @@ QNAME(queue_pushall) (struct QNAME(queue) *q, QELTYP() *v[], size_t count) {
     }
 
     /* take the ownership */
-    mutex_acquire(&q->mutex);
+    pthread_mutex_lock(&q->mutex);
 
     if (q->tail == NULL) {
         /* queue is empty */
@@ -88,27 +99,35 @@ QNAME(queue_pushall) (struct QNAME(queue) *q, QELTYP() *v[], size_t count) {
     }
 
     /* chain the rest */
-    for (i = 1; i < count, i++) {
+    for (i = 1; i < count; i++) {
         q->tail->next = v[i];
         q->tail = v[i];
     }
 
     q->tail->next = NULL;
 
-    condition_broadcast(&q->condition);
-    mutex_release(&q->mutex);
+    pthread_cond_broadcast(&q->condition);
+    pthread_mutex_unlock(&q->mutex);
 }
 
 
 int
-QNAME(queue_waitpop) (struct QNAME(queue) *q, QELTYP() **out) {
+QNAME(queue_pop) (struct QNAME(queue) *q, QELTYP() **out, int flags) {
     int ret = 0;
     QELTYP() *o;
 
-    mutex_acquire(&q->mutex);
-    if ((q->head == NULL) && (condition_wait(&q->condition, &q->mutex))) {
-        ret = -1;
-        goto done;
+    pthread_mutex_lock(&q->mutex);
+    if (q->head == NULL) {
+        if (flags & QWAIT) {
+            if (pthread_cond_wait(&q->condition, &q->mutex)) {
+                ret = -1;
+                goto done;
+            }
+        }
+        else {
+            ret = -1;
+            goto done;
+        }
     }
 
     o = q->head;
@@ -124,7 +143,7 @@ QNAME(queue_waitpop) (struct QNAME(queue) *q, QELTYP() **out) {
     *out = o;
 
 done:
-    mutex_release(&q->mutex);
+    pthread_mutex_unlock(&q->mutex);
 
     return ret;
 }

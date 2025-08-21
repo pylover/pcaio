@@ -20,10 +20,6 @@
 #define CORE_THREADLOCALT_H_
 
 
-/* standard */
-#include <threads.h>
-
-
 /* generic stuff (must included once) */
 #define TLNAME_PASTER2(x, y) x ## y
 #define TLNAME_EVALUATOR2(x, y)  TLNAME_PASTER2(x, y)
