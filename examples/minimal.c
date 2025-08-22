@@ -37,6 +37,17 @@ _config = {
     .workers_max = WORKERS,
 };
 
+static int
+_subtask(int argc, void *argv[]) {
+    struct pcaio_task *t = pcaio_currenttask();
+
+    INFO("subtask: %d started",  t);
+    pcaio_currenttask_relax();
+    INFO("subtask: %d waked up",  t);
+    pcaio_currenttask_relax();
+    INFO("subtask: %d done",  t);
+    return 0;
+}
 
 static int
 _task(int argc, void *argv[]) {
@@ -47,6 +58,7 @@ _task(int argc, void *argv[]) {
     INFO("task: %d waked up",  t);
     pcaio_currenttask_relax();
     INFO("task: %d done",  t);
+    pcaio_task_newschedule(_subtask, 0);
     return 0;
 }
 
