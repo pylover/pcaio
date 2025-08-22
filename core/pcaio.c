@@ -139,6 +139,12 @@ pcaio_task_relax(struct pcaio_task *t) {
 }
 
 
+struct pcaio_task *
+pcaio_currenttask() {
+    return threadlocaltask_get();
+}
+
+
 /** this function will be called from worker threads.
  */
 void
@@ -157,7 +163,6 @@ pcaio_currenttask_relax() {
 
 static void
 _signal(int sig) {
-    printf("signal received: %d\n", sig);
     master_cancel();
 }
 

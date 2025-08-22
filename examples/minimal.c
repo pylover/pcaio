@@ -27,8 +27,8 @@
 #include <pcaio/pcaio.h>
 
 
-#define TASKS_MAX 200
-#define WORKERS 2
+#define TASKS_MAX 60
+#define WORKERS 3
 
 
 static struct pcaio_config
@@ -40,8 +40,13 @@ _config = {
 
 static int
 _task(int argc, void *argv[]) {
+    struct pcaio_task *t = pcaio_currenttask();
+
+    INFO("task: %d started",  t);
     pcaio_currenttask_relax();
+    INFO("task: %d waked up",  t);
     pcaio_currenttask_relax();
+    INFO("task: %d done",  t);
     return 0;
 }
 

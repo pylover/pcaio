@@ -19,6 +19,7 @@
 
 /* standard */
 #include <unistd.h>
+#include <stdbool.h>
 #include <ucontext.h>
 
 /* posix */

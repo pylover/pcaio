@@ -56,6 +56,10 @@ int
 pcaio_task_free(struct pcaio_task *t);
 
 
+struct pcaio_task *
+pcaio_currenttask();
+
+
 void
 pcaio_currenttask_relax();
 

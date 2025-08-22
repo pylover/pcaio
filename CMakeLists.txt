@@ -8,11 +8,12 @@ include(CMakeDependentOption)
 
 # GCC and it's flags
 # set(CMAKE_C_COMPILER gcc)
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+# set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fms-extensions")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE=1")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lpthread")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
 
 
@@ -51,8 +52,6 @@ add_library(pcaio SHARED
 install(TARGETS pcaio DESTINATION "lib")
 install(FILES 
   include/pcaio/pcaio.h 
-  include/pcaio/queueT.h 
-  include/pcaio/queueT.c 
   DESTINATION "include/pcaio"
 )
 

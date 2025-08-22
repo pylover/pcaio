@@ -33,7 +33,7 @@ foreach (t IN LISTS testrules)
     "${PROJECT_BINARY_DIR}"
     "${PROJECT_SOURCE_DIR}"
   )
-  target_link_libraries(${t} PRIVATE pcaio clog)
+  target_link_libraries(${t} pcaio clog)
   add_test(NAME ${t} COMMAND ${t})
 
   add_custom_target(${t}_exec 
