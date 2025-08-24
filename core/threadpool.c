@@ -38,7 +38,7 @@ typedef void *(*pthread_start_t)(void *);
 
 
 int
-threadpool_init(struct threadpool *tp, struct pcaio_config *c,
+threadpool_init(struct threadpool *tp, unsigned short maxworkers,
         worker_t starter, struct taskqueue *q) {
     int err;
     pthread_t *thrds;
@@ -47,7 +47,7 @@ threadpool_init(struct threadpool *tp, struct pcaio_config *c,
         return -1;
     }
 
-    thrds = calloc(c->workers_max, sizeof(pthread_t));
+    thrds = calloc(maxworkers, sizeof(pthread_t));
     if (thrds == NULL) {
         return -1;
     }
@@ -62,8 +62,6 @@ threadpool_init(struct threadpool *tp, struct pcaio_config *c,
     tp->threads = thrds;
     tp->starter = starter;
     tp->taskq = q;
-    tp->min = c->workers_min;
-    tp->max = c->workers_max;
     tp->count = 0;
     return 0;
 }

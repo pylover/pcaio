@@ -35,20 +35,14 @@
 struct threadpool {
     worker_t starter;
     struct taskqueue *taskq;
-    unsigned short min;
-    unsigned short max;
     atomic_ushort count;
     pthread_t *threads;
     pthread_mutex_t mutex;
 };
 
 
-#define threadpool_minimum(tp) threadpool_tune(tp, (tp)->min)
-#define threadpool_maximum(tp) threadpool_tune(tp, (tp)->max)
-
-
 int
-threadpool_init(struct threadpool *p, struct pcaio_config *c,
+threadpool_init(struct threadpool *tp, unsigned short maxworkers,
         worker_t starter, struct taskqueue *q);
 
 

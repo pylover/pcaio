@@ -31,11 +31,9 @@
 #include <clog.h>
 
 /* local private */
-#include "config.h"
-#include "context.h"
-#include "master.h"
-#include "task.h"
 #include "worker.h"
+#include "context.h"
+#include "task.h"
 
 
 static void

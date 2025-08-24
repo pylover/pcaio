@@ -60,7 +60,7 @@ master_init(struct pcaio_config *config) {
         return -1;
     }
 
-    if (threadpool_init(&m->pool, config, worker, &m->taskq)) {
+    if (threadpool_init(&m->pool, config->workers_max, worker, &m->taskq)) {
         taskqueue_deinit(&m->taskq);
         free(m);
         return -1;
@@ -108,7 +108,7 @@ master() {
 
     /* scale the threadpool to minimum capacity */
     tp = &__master__->pool;
-    if (threadpool_scale(tp, tp->min)) {
+    if (threadpool_scale(tp, __master__->config->workers_min)) {
         ERROR("threadpool_scale");
         return -1;
     }
