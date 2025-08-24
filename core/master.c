@@ -107,18 +107,19 @@ master_tasks_decrease() {
 
 
 void
+master_tasks_increase() {
+    atomic_fetch_add(&_master->tasks, 1);
+}
+
+
+void
 master_report(struct pcaio_task *t) {
-    if (t->status == TS_NAIVE) {
-        t->status = TS_COUNTED;
-        atomic_fetch_add(&_master->tasks, 1);
-    }
     taskqueue_push(&_master->taskq, t);
 }
 
 
 void
 master_cancel() {
-    // TODO: atomic, threadsafe
     _master->cancel = true;
 }
 

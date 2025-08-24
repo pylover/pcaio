@@ -27,6 +27,7 @@
 /* local private */
 #include "config.h"
 #include "context.h"
+#include "master.h"
 #include "task.h"
 #undef T
 #define T task
@@ -38,26 +39,11 @@
 
 
 static void
-_taskmain(struct pcaio_task *t) {
-    int status;
-    ucontext_t *ctx;
-
-    status = t->func(t->argc, t->argv);
-    if (status) {
-        ERROR("task %p exited with status: %d", t, status);
-    }
-
-    t->status = TS_TERMINATING;
-    ctx = threadlocalucontext_get();
-    if (ctx == NULL) {
-        FATAL("threadlocalucontext_get");
-    }
-    setcontext(ctx);
-}
+_taskmain(struct pcaio_task *t);
 
 
 struct pcaio_task *
-task_new(pcaio_entrypoint_t func, int argc, va_list args) {
+task_new(pcaio_taskmain_t func, int argc, va_list args) {
     struct pcaio_task *t;
     void *stack;
     size_t allocsize;
@@ -119,6 +105,7 @@ task_new(pcaio_entrypoint_t func, int argc, va_list args) {
     makecontext(&t->context, (void (*)(void))_taskmain, 1, t);
 
     /* hollaaaa */
+    master_tasks_increase();
     return t;
 }
 
@@ -133,4 +120,29 @@ task_free(struct pcaio_task *t) {
         free(t->context.uc_stack.ss_sp);
     }
     free(t);
+    master_tasks_decrease();
+}
+
+
+static void
+_taskmain(struct pcaio_task *t) {
+    int exitstatus;
+    ucontext_t *landing;
+
+    /* execute the task's main function (aka start the task!) */
+    exitstatus = t->func(t->argc, t->argv);
+    if (exitstatus) {
+        ERROR("task %p exited with status: %d", t, exitstatus);
+    }
+
+    /* tell the worker the task is completed and there is nothing to schedule
+     * anymore. */
+    t->flags |= TASK_TERMINATED;
+
+    /* land */
+    landing = threadlocalucontext_get();
+    if (landing == NULL) {
+        FATAL("threadlocalucontext_get");
+    }
+    setcontext(landing);
 }

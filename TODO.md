@@ -1,7 +1,3 @@
-- theadlocal successor instead of setcontext
-- revise includes
-- profile
-- valicate config before start anything
 - take care of FATALs
 
 ## syscalls

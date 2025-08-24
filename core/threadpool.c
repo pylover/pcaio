@@ -119,7 +119,7 @@ done:
 
 static int
 _scaledown(struct threadpool *tp, unsigned short count) {
-    void *status;
+    void *exitstatus;
     int ret = 0;
     int err;
     int i;
@@ -148,20 +148,20 @@ _scaledown(struct threadpool *tp, unsigned short count) {
 
     /* wait for them */
     for (i = tp->count - 1; i >= target; i--) {
-        err = pthread_join(tp->threads[i], &status);
+        err = pthread_join(tp->threads[i], &exitstatus);
         if (err) {
             errno = err;
             ret = -1;
             goto done;
         }
 
-        if (status == PTHREAD_CANCELED) {
+        if (exitstatus == PTHREAD_CANCELED) {
             INFO("thread: 0x%lx has been canceled successfully.",
                     pthread_self());
         }
         else {
-            INFO("thread: 0x%lx exitted with status: %ld", pthread_self(),
-                    (long)status);
+            INFO("thread: 0x%lx exitted with exitstatus: %ld", pthread_self(),
+                    (long)exitstatus);
         }
 
         atomic_fetch_sub(&tp->count, 1);

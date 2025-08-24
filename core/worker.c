@@ -20,6 +20,7 @@
 /* standard */
 #include <unistd.h>
 #include <stdbool.h>
+#include <errno.h>
 #include <ucontext.h>
 
 /* posix */
@@ -45,47 +46,42 @@ _cleanup(struct taskqueue *q) {
 }
 
 
-static int
-_stepforward(struct pcaio_task *t, ucontext_t *landing) {
-    threadlocaltask_set(t);
-    if (swapcontext(landing, &t->context)) {
-        FATAL("swapcontext to task");
-    }
-
-    /* after working a bit on task */
-    if (t->status == TS_TERMINATING) {
-        task_free(t);
-        master_tasks_decrease();
-        /* then clear the thread local task to indicate the worker is idle */
-        threadlocaltask_set(NULL);
-        return 1;
-    }
-
-    return 0;
-}
-
-
 /** spawns and start a new thread for the worker's loop. sets the tidout and
  * then immediately returns 0 if enrything was ok. otherwise -1.
  */
 int
 worker(struct taskqueue *q) {
+    int exitstatus = 0;
     ucontext_t landing;
     struct pcaio_task *t;
 
-    if (threadlocalucontext_set(&landing)) {
-        FATAL("threadlocalucontext_set");
-    }
+    /* storing the main thread's context inside the thread specific storage */
+    threadlocalucontext_set(&landing);
 
     /* register the cleanup handler */
     pthread_cleanup_push((void(*)(void*))_cleanup, q);
 
     /* wait, pop, calculate and start over */
     while (taskqueue_pop(q, &t, QWAIT) == 0) {
-        /* work on as short as possible */
-        if (_stepforward(t, &landing)) {
-            /* task is terminated and disposed. so, do not schedule it again
-             * and continue to pop the next task to execute */
+        /* update the task's thread local storage, master_currenttask*
+         * functions needs it. */
+        threadlocaltask_set(t);
+
+        /* switch to task's context */
+        if (swapcontext(&landing, &t->context)) {
+            /* out of memory or something like this. trying to quit to free up
+             * some resources. */
+            ERROR("insufficient memory for swapcontext(3)");
+            exitstatus = ENOMEM;
+            goto done;
+        }
+
+        if (t->flags & TASK_TERMINATED) {
+            /* freeup  */
+            task_free(t);
+
+            /* task is terminated and just disposed. so, do not schedule it
+             * again and continue to pop the next task to step forward */
             continue;
         }
 
@@ -93,6 +89,7 @@ worker(struct taskqueue *q) {
         taskqueue_push(q, t);
     }
 
+done:
     pthread_cleanup_pop(true);
-    return 0;
+    return exitstatus;
 }

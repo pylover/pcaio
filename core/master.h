@@ -61,4 +61,8 @@ void
 master_tasks_decrease();
 
 
+void
+master_tasks_increase();
+
+
 #endif  // CORE_MASTER_H_

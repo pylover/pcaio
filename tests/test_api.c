@@ -33,11 +33,11 @@ _worker(int argc, char *argv[]) {
     int i = strlen(argv[0]);
 
     logs[hits++] = i;
-    pcaio_currenttask_relax();
+    eqint(0, pcaio_currenttask_relax());
 
     i *= 3;
     logs[hits++] = i;
-    pcaio_currenttask_relax();
+    eqint(0, pcaio_currenttask_relax());
 
     i += 7;
     logs[hits++] = i;
@@ -51,11 +51,11 @@ test_api_advanced() {
 
     eqint(0, pcaio_init(NULL));
 
-    t = pcaio_task_new((pcaio_entrypoint_t)_worker, 1, "foo");
+    t = pcaio_task_new((pcaio_taskmain_t)_worker, 1, "foo");
     isnotnull(t);
     eqint(0, pcaio_task_schedule(t));
 
-    t = pcaio_task_new((pcaio_entrypoint_t)_worker, 1, "thud");
+    t = pcaio_task_new((pcaio_taskmain_t)_worker, 1, "thud");
     isnotnull(t);
     eqint(0, pcaio_task_schedule(t));
 
@@ -77,8 +77,8 @@ void
 test_api_simple() {
     pcaio_init(NULL);
 
-    isnotnull(pcaio_task_newschedule((pcaio_entrypoint_t)_worker, 1, "foo"));
-    isnotnull(pcaio_task_newschedule((pcaio_entrypoint_t)_worker, 1, "thud"));
+    isnotnull(pcaio_task_newschedule((pcaio_taskmain_t)_worker, 1, "foo"));
+    isnotnull(pcaio_task_newschedule((pcaio_taskmain_t)_worker, 1, "thud"));
 
     hits = 0;
     memset(logs, 0, sizeof(int) * 6);

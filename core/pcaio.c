@@ -77,7 +77,7 @@ pcaio_task_schedule(struct pcaio_task *t) {
 
 
 struct pcaio_task *
-pcaio_task_newschedule(pcaio_entrypoint_t func, int argc, ...) {
+pcaio_task_newschedule(pcaio_taskmain_t func, int argc, ...) {
     va_list args;
     struct pcaio_task *t;
 
@@ -96,7 +96,7 @@ pcaio_task_newschedule(pcaio_entrypoint_t func, int argc, ...) {
 
 
 struct pcaio_task *
-pcaio_task_new(pcaio_entrypoint_t func, int argc, ...) {
+pcaio_task_new(pcaio_taskmain_t func, int argc, ...) {
     va_list args;
     struct pcaio_task *t;
 
@@ -120,13 +120,14 @@ pcaio_task_free(struct pcaio_task *t) {
 }
 
 
-void
+int
 pcaio_task_relax(struct pcaio_task *t) {
     ucontext_t *ctx;
 
     ctx = threadlocalucontext_get();
     if (ctx == NULL) {
-        FATAL("threadlocalucontext_get");
+        ERROR("trying to relax on a thread which it's local context is null");
+        return -1;
     }
 
     /* then clear the thread local task to indicate the worker is idle */
@@ -134,30 +135,51 @@ pcaio_task_relax(struct pcaio_task *t) {
 
     /* hollaaa, do the magic! */
     if (swapcontext(&(t->context), ctx)) {
-        FATAL("swapcontext to main");
+        ERROR("out of memory for swapcontext(3)");
+        return -1;
     }
+
+    return 0;
 }
 
 
 struct pcaio_task *
 pcaio_currenttask() {
-    return threadlocaltask_get();
+    struct pcaio_task *t;
+
+    t = threadlocaltask_get();
+    if (t == NULL) {
+        /* there is no active task inside the thread specific storage, a
+         * wierd situtation. ignoring it silenthly, fatal or at least a
+         * warning?
+         */
+        WARN("thread's local active task is null.");
+        return NULL;
+    }
+
+    return t;
 }
 
 
 /** this function will be called from worker threads.
  */
-void
+int
 pcaio_currenttask_relax() {
     struct pcaio_task *t;
 
     /* retrieve the thread local ucontext and task */
     t = threadlocaltask_get();
     if (t == NULL) {
-        FATAL("threadlocaltask_get");
+        /* there is no active task inside the thread specific storage, a
+         * wierd situtation. ignoring it silenthly, fatal or at least a
+         * warning?
+         */
+        ERROR("trying to relax on a thread which it's local active task "
+                "is null");
+        return -1;
     }
 
-    pcaio_task_relax(t);
+    return pcaio_task_relax(t);
 }
 
 

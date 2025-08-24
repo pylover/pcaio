@@ -22,7 +22,7 @@
 
 struct pcaio;
 struct pcaio_task;
-typedef int (*pcaio_entrypoint_t) (int argc, void *argv[]);
+typedef int (*pcaio_taskmain_t) (int argc, void *argv[]);
 
 
 /* this structure must be filled by user */
@@ -45,11 +45,11 @@ pcaio_task_schedule(struct pcaio_task *t);
 
 
 struct pcaio_task *
-pcaio_task_newschedule(pcaio_entrypoint_t func, int argc, ...);
+pcaio_task_newschedule(pcaio_taskmain_t func, int argc, ...);
 
 
 struct pcaio_task *
-pcaio_task_new(pcaio_entrypoint_t func, int argc, ...);
+pcaio_task_new(pcaio_taskmain_t func, int argc, ...);
 
 
 int
@@ -60,7 +60,7 @@ struct pcaio_task *
 pcaio_currenttask();
 
 
-void
+int
 pcaio_currenttask_relax();
 
 

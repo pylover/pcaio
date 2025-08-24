@@ -34,35 +34,31 @@ typedef struct pcaio_task task_t;
 #include "pcaio/pcaio.h"
 
 
-enum taskstatus {
-    TS_NAIVE,
-    TS_COUNTED,
-    TS_TERMINATING,
+enum taskflags {
+    TASK_TERMINATED = 0x1,
 };
 
 
 struct pcaio_task {
+    /* used by anyone to flag the task */
+    int flags;
+
     /* used by taskqueue */
     struct pcaio_task *next;
 
     /* used by worker */
     struct ucontext_t context;
-    // size_t stacksize;
-    enum taskstatus status;
 
     /* provided by the user */
-    pcaio_entrypoint_t func;
+    int exitstatus;
+    pcaio_taskmain_t func;
     int argc;
     void *argv[];
 };
 
 
 struct pcaio_task *
-task_new(pcaio_entrypoint_t func, int argc, va_list args);
-
-
-// int
-// task_createcontext(struct pcaio_task *t, ucontext_t *successor);
+task_new(pcaio_taskmain_t func, int argc, va_list args);
 
 
 void
