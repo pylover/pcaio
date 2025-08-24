@@ -1,4 +1,5 @@
-- take care of FATALs
+- select(2)
+- epoll(7)
 
 ## syscalls
 - futex(2) 

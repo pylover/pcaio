@@ -5,7 +5,6 @@ add_library(task OBJECT task.c task.h)
 add_library(master OBJECT master.c master.h)
 add_library(core OBJECT pcaio.c ../include/pcaio/pcaio.h)
 
-set(CONFIG_PCAIO_STACKSIZE_MAX 0x800000)
 set(CONFIG_PCAIO_STACKSIZE_DEFAULT 0x8000)
 configure_file(config.h.in config.h @ONLY)
 include_directories(${PROJECT_SOURCE_DIR}/core ${PROJECT_BINARY_DIR}/core)

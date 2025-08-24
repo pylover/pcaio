@@ -16,6 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
+
+
 /* standard */
 #include <stdlib.h>
 #include <stdbool.h>
@@ -36,14 +38,14 @@
 #include "pcaio/pcaio.h"
 
 
-static struct master *_master;
+struct master *__master__;
 
 
 int
 master_init(struct pcaio_config *config) {
     struct master *m;
 
-    if (_master) {
+    if (__master__) {
         ERROR("already initialized");
         return -1;
     }
@@ -76,7 +78,7 @@ master_init(struct pcaio_config *config) {
     m->config = config;
     m->cancel = false;
     m->tasks = 0;
-    _master = m;
+    __master__ = m;
     return 0;
 }
 
@@ -85,61 +87,33 @@ int
 master_deinit() {
     struct master *m;
 
-    if (_master == NULL) {
+    if (__master__ == NULL) {
         return -1;
     }
-    m = _master;
+    m = __master__;
 
     threadlocaltask_delete();
     threadlocalucontext_delete();
     threadpool_deinit(&m->pool);
     taskqueue_deinit(&m->taskq);
     free(m);
-    _master = NULL;
+    __master__ = NULL;
     return 0;
-}
-
-
-void
-master_tasks_decrease() {
-    atomic_fetch_sub(&_master->tasks, 1);
-}
-
-
-void
-master_tasks_increase() {
-    atomic_fetch_add(&_master->tasks, 1);
-}
-
-
-void
-master_report(struct pcaio_task *t) {
-    taskqueue_push(&_master->taskq, t);
-}
-
-
-void
-master_cancel() {
-    _master->cancel = true;
 }
 
 
 int
 master() {
-    struct threadpool *tp = &_master->pool;
+    struct threadpool *tp;
 
-    if (_master == NULL) {
-        errno = EINVAL;
-        ERROR("call pcaio_init() once before the %s().", __func__);
-        return -1;
-    }
-
+    /* scale the threadpool to minimum capacity */
+    tp = &__master__->pool;
     if (threadpool_scale(tp, tp->min)) {
         ERROR("threadpool_scale");
         return -1;
     }
 
-    while ((!_master->cancel) && (_master->tasks)) {
+    while ((!__master__->cancel) && (__master__->tasks)) {
         sleep(.3);
     }
 

@@ -105,7 +105,7 @@ task_new(pcaio_taskmain_t func, int argc, va_list args) {
     makecontext(&t->context, (void (*)(void))_taskmain, 1, t);
 
     /* hollaaaa */
-    master_tasks_increase();
+    atomic_fetch_add(&__master__->tasks, 1);
     return t;
 }
 
@@ -120,7 +120,7 @@ task_free(struct pcaio_task *t) {
         free(t->context.uc_stack.ss_sp);
     }
     free(t);
-    master_tasks_decrease();
+    atomic_fetch_sub(&__master__->tasks, 1);
 }
 
 
@@ -141,8 +141,10 @@ _taskmain(struct pcaio_task *t) {
 
     /* land */
     landing = threadlocalucontext_get();
-    if (landing == NULL) {
-        FATAL("threadlocalucontext_get");
+    if (landing) {
+        setcontext(landing);
     }
-    setcontext(landing);
+
+    /* ooops! */
+    ERROR("threadlocalucontext_get() == NULL");
 }

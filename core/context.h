@@ -23,7 +23,7 @@
 /* standard */
 #include <ucontext.h>
 
-
+/* local private */
 #undef T
 #define T ucontext
 #include "threadlocalT.h"

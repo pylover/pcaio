@@ -30,11 +30,14 @@
 
 struct master {
     atomic_bool cancel;
-    struct pcaio_config *config;
     atomic_uint tasks;
+    struct pcaio_config *config;
     struct taskqueue taskq;
     struct threadpool pool;
 };
+
+
+extern struct master *__master__;
 
 
 int
@@ -45,24 +48,8 @@ int
 master_deinit();
 
 
-void
-master_cancel();
-
-
-void
-master_report(struct pcaio_task *t);
-
-
 int
 master();
-
-
-void
-master_tasks_decrease();
-
-
-void
-master_tasks_increase();
 
 
 #endif  // CORE_MASTER_H_

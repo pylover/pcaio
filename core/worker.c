@@ -17,6 +17,7 @@
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
 
+
 /* standard */
 #include <unistd.h>
 #include <stdbool.h>
@@ -39,16 +40,12 @@
 
 static void
 _cleanup(struct taskqueue *q) {
-    /* master is telling me to die as soon as possible. */
     pthread_mutex_unlock(&q->mutex);
     threadlocaltask_delete();
     threadlocalucontext_delete();
 }
 
 
-/** spawns and start a new thread for the worker's loop. sets the tidout and
- * then immediately returns 0 if enrything was ok. otherwise -1.
- */
 int
 worker(struct taskqueue *q) {
     int exitstatus = 0;

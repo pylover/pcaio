@@ -24,8 +24,10 @@
 
 /* standard */
 #include <signal.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <errno.h>
 #include <ucontext.h>
 
 /* thirdparty */
@@ -45,6 +47,12 @@ _defaultconfig = {
     .workers_min = 1,
     .workers_max = 1,
 };
+
+
+static void
+_signal(int sig) {
+    __master__->cancel = true;
+}
 
 
 int
@@ -71,7 +79,8 @@ pcaio_task_schedule(struct pcaio_task *t) {
     if (t == NULL) {
         return -1;
     }
-    master_report(t);
+
+    taskqueue_push(&__master__->taskq, t);
     return 0;
 }
 
@@ -90,7 +99,7 @@ pcaio_task_newschedule(pcaio_taskmain_t func, int argc, ...) {
         return NULL;
     }
 
-    master_report(t);
+    taskqueue_push(&__master__->taskq, t);
     return t;
 }
 
@@ -183,20 +192,23 @@ pcaio_currenttask_relax() {
 }
 
 
-static void
-_signal(int sig) {
-    master_cancel();
-}
-
-
 int
 pcaio() {
     struct sigaction sigact;
+
+    /* validate globals */
+    if (__master__ == NULL) {
+        errno = EINVAL;
+        ERROR("call pcaio_init() once before the %s().", __func__);
+        return -1;
+    }
+
+    /* catch signal(s) */
     sigact.sa_handler = _signal;
     sigact.sa_flags = 0;
-
     if (sigemptyset(&sigact.sa_mask)) {
         ERROR("sigemptyset");
+        return -1;
     }
 
     if (sigaction(SIGINT, &sigact, NULL)) {
