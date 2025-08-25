@@ -33,11 +33,11 @@ _worker(int argc, char *argv[]) {
     int i = strlen(argv[0]);
 
     logs[hits++] = i;
-    eqint(0, pcaio_currenttask_relax());
+    pcaio_relax();
 
     i *= 3;
     logs[hits++] = i;
-    eqint(0, pcaio_currenttask_relax());
+    pcaio_relax();
 
     i += 7;
     logs[hits++] = i;
@@ -46,44 +46,15 @@ _worker(int argc, char *argv[]) {
 
 
 void
-test_api_advanced() {
-    struct pcaio_task *t;
+test_api() {
+    struct pcaio_task *tasks[2];
 
-    eqint(0, pcaio_init(NULL));
-
-    t = pcaio_task_new((pcaio_taskmain_t)_worker, 1, "foo");
-    isnotnull(t);
-    eqint(0, pcaio_task_schedule(t));
-
-    t = pcaio_task_new((pcaio_taskmain_t)_worker, 1, "thud");
-    isnotnull(t);
-    eqint(0, pcaio_task_schedule(t));
+    tasks[0] = pcaio_task_new((pcaio_taskmain_t)_worker, 1, "foo");
+    tasks[1] = pcaio_task_new((pcaio_taskmain_t)_worker, 1, "thud");
 
     hits = 0;
     memset(logs, 0, sizeof(int) * 6);
-    eqint(0, pcaio());
-    eqint(0, pcaio_deinit());
-    eqint(6, hits);
-    eqint(3, logs[0]);
-    eqint(4, logs[1]);
-    eqint(9, logs[2]);
-    eqint(12, logs[3]);
-    eqint(16, logs[4]);
-    eqint(19, logs[5]);
-}
-
-
-void
-test_api_simple() {
-    pcaio_init(NULL);
-
-    isnotnull(pcaio_task_newschedule((pcaio_taskmain_t)_worker, 1, "foo"));
-    isnotnull(pcaio_task_newschedule((pcaio_taskmain_t)_worker, 1, "thud"));
-
-    hits = 0;
-    memset(logs, 0, sizeof(int) * 6);
-    eqint(0, pcaio());
-    eqint(0, pcaio_deinit());
+    eqint(0, pcaio(NULL, tasks, 2));
     eqint(6, hits);
     eqint(3, logs[0]);
     eqint(4, logs[1]);
@@ -96,6 +67,5 @@ test_api_simple() {
 
 int
 main() {
-    test_api_simple();
-    test_api_advanced();
+    test_api();
 }

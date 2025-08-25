@@ -39,26 +39,26 @@ _config = {
 
 static int
 _subtask(int argc, void *argv[]) {
-    struct pcaio_task *t = pcaio_currenttask();
+    struct pcaio_task *t = pcaio_self();
 
     INFO("subtask: %d started",  t);
-    pcaio_currenttask_relax();
+    pcaio_relax();
     INFO("subtask: %d waked up",  t);
-    pcaio_currenttask_relax();
+    pcaio_relax();
     INFO("subtask: %d done",  t);
     return 0;
 }
 
 static int
 _task(int argc, void *argv[]) {
-    struct pcaio_task *t = pcaio_currenttask();
+    struct pcaio_task *t = pcaio_self();
 
     INFO("task: %d started",  t);
-    pcaio_currenttask_relax();
+    pcaio_relax();
     INFO("task: %d waked up",  t);
-    pcaio_currenttask_relax();
+    pcaio_relax();
     INFO("task: %d done",  t);
-    pcaio_task_newschedule(_subtask, 0);
+    pcaio_fschedule(_subtask, 0);
     return 0;
 }
 
@@ -66,13 +66,12 @@ _task(int argc, void *argv[]) {
 int
 main() {
     int i;
+    struct pcaio_task *tasks[TASKS_MAX];
 
-    pcaio_init(&_config);
     for (i = 0; i < TASKS_MAX; i++) {
-        pcaio_task_newschedule(_task, 0);
+        tasks[i] = pcaio_task_new(_task, 0);
     }
-    pcaio();
-    pcaio_deinit();
+    pcaio(&_config, tasks, TASKS_MAX);
     INFO("%ld tasks has been completed successfully", TASKS_MAX);
     return EXIT_SUCCESS;
 }

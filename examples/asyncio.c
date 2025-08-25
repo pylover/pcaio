@@ -16,40 +16,30 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_MASTER_H_
-#define CORE_MASTER_H_
+/* standard */
+#include <stdio.h>
+#include <stdlib.h>
+
+/* thirdparty */
+#include <clog.h>
+
+/* pcaio */
+#include <pcaio/pcaio.h>
 
 
-/* local private */
-#include "task.h"
-#include "threadpool.h"
-
-/* local public */
-#include "pcaio/pcaio.h"
-
-
-struct master {
-    atomic_bool cancel;
-    atomic_uint tasks;
-    struct pcaio_config *config;
-    struct taskqueue taskq;
-    struct threadpool pool;
-};
-
-
-extern struct master state;
+static int
+_urandom(int argc, void *argv[]) {
+    pcaio_relax();
+    pcaio_relax();
+    return 0;
+}
 
 
 int
-master_init(struct pcaio_config *config);
+main() {
+    struct pcaio_task *t;
 
+    t = pcaio_task_new(_urandom, 0);
+    return pcaio(NULL, &t, 1);
+}
 
-int
-master_deinit();
-
-
-int
-master();
-
-
-#endif  // CORE_MASTER_H_

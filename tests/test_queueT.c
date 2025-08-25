@@ -41,7 +41,7 @@ test_queueT() {
     struct foo foo75 = {75};
 
     /* create */
-    eqint(0, fooqueue_init(&q));
+    fooqueue_init(&q);
     isnull(q.head);
     isnull(q.tail);
 

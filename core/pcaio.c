@@ -48,42 +48,12 @@ _defaultconfig = {
 
 static void
 _signal(int sig) {
-    __master__->cancel = true;
+    state.cancel = true;
 }
 
 
 int
-pcaio_init(struct pcaio_config *config) {
-    if (config == NULL) {
-        config = &_defaultconfig;
-    }
-    else {
-        config = config;
-    }
-
-    return master_init(config);
-}
-
-
-int
-pcaio_deinit() {
-    return master_deinit();
-}
-
-
-int
-pcaio_task_schedule(struct pcaio_task *t) {
-    if (t == NULL) {
-        return -1;
-    }
-
-    taskqueue_push(&__master__->taskq, t);
-    return 0;
-}
-
-
-struct pcaio_task *
-pcaio_task_newschedule(pcaio_taskmain_t func, int argc, ...) {
+pcaio_fschedule(pcaio_taskmain_t func, int argc, ...) {
     va_list args;
     struct pcaio_task *t;
 
@@ -93,11 +63,11 @@ pcaio_task_newschedule(pcaio_taskmain_t func, int argc, ...) {
     va_end(args);
 
     if (t == NULL) {
-        return NULL;
+        return -1;
     }
 
-    taskqueue_push(&__master__->taskq, t);
-    return t;
+    taskqueue_push(&state.taskq, t);
+    return 0;
 }
 
 
@@ -126,31 +96,8 @@ pcaio_task_free(struct pcaio_task *t) {
 }
 
 
-int
-pcaio_task_relax(struct pcaio_task *t) {
-    ucontext_t *ctx;
-
-    ctx = threadlocalucontext_get();
-    if (ctx == NULL) {
-        ERROR("trying to relax on a thread which it's local context is null");
-        return -1;
-    }
-
-    /* then clear the thread local task to indicate the worker is idle */
-    threadlocaltask_set(NULL);
-
-    /* hollaaa, do the magic! */
-    if (swapcontext(&(t->context), ctx)) {
-        ERROR("out of memory for swapcontext(3)");
-        return -1;
-    }
-
-    return 0;
-}
-
-
 struct pcaio_task *
-pcaio_currenttask() {
+pcaio_self() {
     struct pcaio_task *t;
 
     t = threadlocaltask_get();
@@ -170,33 +117,55 @@ pcaio_currenttask() {
 /** this function will be called from worker threads.
  */
 int
-pcaio_currenttask_relax() {
+pcaio_relax() {
+    ucontext_t *ctx;
     struct pcaio_task *t;
 
-    /* retrieve the thread local ucontext and task */
+    /* retrieve the thread local task */
     t = threadlocaltask_get();
     if (t == NULL) {
         /* there is no active task inside the thread specific storage, a
          * wierd situtation. ignoring it silenthly, fatal or at least a
          * warning?
          */
-        ERROR("trying to relax on a thread which it's local active task "
-                "is null");
+        ERROR("trying to relax on a thread which it's local task is null");
         return -1;
     }
 
-    return pcaio_task_relax(t);
+    /* retrieve the thread local ucontext and task */
+    ctx = threadlocalucontext_get();
+    if (ctx == NULL) {
+        ERROR("trying to relax on a thread which it's local context is null");
+        return -1;
+    }
+
+    /* then clear the thread local task to indicate the worker is idle */
+    threadlocaltask_set(NULL);
+
+    /* hollaaa, do the magic! */
+    if (swapcontext(&(t->context), ctx)) {
+        ERROR("out of memory for swapcontext(3)");
+        return -1;
+    }
+
+    return 0;
 }
 
 
 int
-pcaio() {
+pcaio(struct pcaio_config *c, struct pcaio_task *tasks[],
+        unsigned short count) {
+    int i;
+    int masterstatus;
     struct sigaction sigact;
 
-    /* validate globals */
-    if (__master__ == NULL) {
-        errno = EINVAL;
-        ERROR("call pcaio_init() once before the %s().", __func__);
+    if (count < 1) {
+        ERROR("at least one task must be provided");
+        return -1;
+    }
+
+    if (master_init(c? c: &_defaultconfig)) {
+        ERROR("pcaio_init");
         return -1;
     }
 
@@ -213,5 +182,11 @@ pcaio() {
         return -1;
     }
 
-    return master();
+    for (i = 0; i < count; i++) {
+        taskqueue_push(&state.taskq, tasks[i]);
+    }
+
+    masterstatus = master();
+    master_deinit();
+    return masterstatus;
 }

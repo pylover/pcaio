@@ -47,7 +47,7 @@ struct QNAME(queue) {
 };
 
 
-int
+void
 QNAME(queue_init) (struct QNAME(queue) *q);
 
 

@@ -38,66 +38,48 @@
 #include "pcaio/pcaio.h"
 
 
-struct master *__master__;
+struct master state = {
+    .cancel = true,
+    .tasks = 0,
+    .config = NULL,
+};
 
 
 int
 master_init(struct pcaio_config *config) {
-    struct master *m;
-
-    if (__master__) {
+    if (state.config) {
         ERROR("already initialized");
         return -1;
     }
 
-    m = malloc(sizeof(struct master));
-    if (m == NULL) {
-        return -1;
-    }
-
-    if (taskqueue_init(&m->taskq)) {
-        free(m);
-        return -1;
-    }
-
-    if (threadpool_init(&m->pool, config->workers_max, worker, &m->taskq)) {
-        taskqueue_deinit(&m->taskq);
-        free(m);
+    taskqueue_init(&state.taskq);
+    if (threadpool_init(&state.pool, config->workers_max, worker,
+                &state.taskq)) {
+        taskqueue_deinit(&state.taskq);
         return -1;
     }
 
     /* threadlocal storages */
-    if (threadlocaltask_init(task_free)
-            || threadlocalucontext_init(NULL)) {
-        threadpool_deinit(&m->pool);
-        taskqueue_deinit(&m->taskq);
-        free(m);
+    if (threadlocaltask_init(task_free) || threadlocalucontext_init(NULL)) {
+        threadpool_deinit(&state.pool);
+        taskqueue_deinit(&state.taskq);
         return -1;
     }
 
-    m->config = config;
-    m->cancel = false;
-    m->tasks = 0;
-    __master__ = m;
+    state.config = config;
+    state.cancel = false;
     return 0;
 }
 
 
 int
 master_deinit() {
-    struct master *m;
-
-    if (__master__ == NULL) {
-        return -1;
-    }
-    m = __master__;
-
     threadlocaltask_delete();
     threadlocalucontext_delete();
-    threadpool_deinit(&m->pool);
-    taskqueue_deinit(&m->taskq);
-    free(m);
-    __master__ = NULL;
+    threadpool_deinit(&state.pool);
+    taskqueue_deinit(&state.taskq);
+    state.config = NULL;
+    state.cancel = true;
     return 0;
 }
 
@@ -107,13 +89,13 @@ master() {
     struct threadpool *tp;
 
     /* scale the threadpool to minimum capacity */
-    tp = &__master__->pool;
-    if (threadpool_scale(tp, __master__->config->workers_min)) {
+    tp = &state.pool;
+    if (threadpool_scale(tp, state.config->workers_min)) {
         ERROR("threadpool_scale");
         return -1;
     }
 
-    while ((!__master__->cancel) && (__master__->tasks)) {
+    while ((!state.cancel) && (state.tasks)) {
         sleep(.3);
     }
 

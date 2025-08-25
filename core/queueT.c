@@ -24,30 +24,13 @@
 #include <pthread.h>
 
 
-int
+void
 QNAME(queue_init) (struct QNAME(queue) *q) {
-    int err;
-
-    if (q == NULL) {
-        return -1;
-    }
-
-    err = pthread_mutex_init(&q->mutex, NULL);
-    if (err) {
-        errno = err;
-        return -1;
-    }
-
-    err = pthread_cond_init(&q->condition, NULL);
-    if (err) {
-        pthread_mutex_destroy(&q->mutex);
-        errno = err;
-        return -1;
-    }
+    pthread_mutex_init(&q->mutex, NULL);
+    pthread_cond_init(&q->condition, NULL);
 
     q->head = NULL;
     q->tail = NULL;
-    return 0;
 }
 
 

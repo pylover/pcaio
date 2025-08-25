@@ -1,3 +1,4 @@
+- prevent task twice scheduling
 - select(2)
 - epoll(7)
 

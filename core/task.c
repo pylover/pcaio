@@ -105,7 +105,7 @@ task_new(pcaio_taskmain_t func, int argc, va_list args) {
     makecontext(&t->context, (void (*)(void))_taskmain, 1, t);
 
     /* hollaaaa */
-    atomic_fetch_add(&__master__->tasks, 1);
+    atomic_fetch_add(&state.tasks, 1);
     return t;
 }
 
@@ -120,7 +120,7 @@ task_free(struct pcaio_task *t) {
         free(t->context.uc_stack.ss_sp);
     }
     free(t);
-    atomic_fetch_sub(&__master__->tasks, 1);
+    atomic_fetch_sub(&state.tasks, 1);
 }
 
 
