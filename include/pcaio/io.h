@@ -16,50 +16,29 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_TASK_H_
-#define CORE_TASK_H_
+#ifndef INCLUDE_PCAIO_IO_H_
+#define INCLUDE_PCAIO_IO_H_
 
 
-/* standard */
-#include <ucontext.h>
-
-/* local private */
-typedef struct pcaio_task task_t;
-#undef T
-#define T task
-#include "threadlocalT.h"
+/* statndard */
+#include <errno.h>
 
 /* local public */
-#undef T
-#define T task
-#include "pcaio/queueT.h"
-#include "pcaio/pcaio.h"
+#include <pcaio/pcaio.h>
 
 
-struct pcaio_task {
-    /* used by anyone to flag the task */
-    int flags;
-
-    /* used by taskqueue */
-    struct pcaio_task *next;
-
-    /* used by worker */
-    struct ucontext_t context;
-
-    /* provided by the user */
-    int exitstatus;
-    pcaio_taskmain_t func;
-    int argc;
-    void *argv[];
-};
+#define IOREAD 0x1
+#define IOWRITE 0x2
+#define IOERROR 0x4
+#define IO_MUSTWAIT(e) \
+    (((e) == EAGAIN) || ((e) == EWOULDBLOCK) || ((e) == EINPROGRESS))
 
 
-struct pcaio_task *
-task_new(pcaio_taskmain_t func, int argc, va_list args);
+typedef struct pcaio_ioevent {
+    int fd;
+    int events;
+    struct pcaio_task *task;
+} pcaio_ioevent_t;
 
 
-void
-task_free(struct pcaio_task *t);
-
-
-#endif  // CORE_TASK_H_
+#endif  // INCLUDE_PCAIO_IO_H_

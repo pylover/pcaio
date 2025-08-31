@@ -39,14 +39,18 @@
 
 
 struct master state = {
+    .config = NULL,
     .cancel = true,
     .tasks = 0,
-    .config = NULL,
+    .modulescount = 0,
 };
 
 
 int
 master_init(struct pcaio_config *config) {
+    int i;
+    struct pcaio_module *m;
+
     if (state.config) {
         ERROR("already initialized");
         return -1;
@@ -61,23 +65,47 @@ master_init(struct pcaio_config *config) {
 
     /* threadlocal storages */
     if (threadlocaltask_init(task_free) || threadlocalucontext_init(NULL)) {
-        threadpool_deinit(&state.pool);
-        taskqueue_deinit(&state.taskq);
-        return -1;
+        goto failed;
+    }
+
+    /* initialize installed modules */
+    for (i = 0; i < state.modulescount; i++) {
+        m = state.modules[i];
+        if (m->init && m->init(m)) {
+            ERROR("pcaio_module_%s_init", m->name);
+            goto failed;
+        }
     }
 
     state.config = config;
     state.cancel = false;
     return 0;
+
+failed:
+    threadpool_deinit(&state.pool);
+    taskqueue_deinit(&state.taskq);
+    return -1;
 }
 
 
 int
 master_deinit() {
+    int i;
+    struct pcaio_module *m;
+
     threadlocaltask_delete();
     threadlocalucontext_delete();
     threadpool_deinit(&state.pool);
     taskqueue_deinit(&state.taskq);
+
+    /* freeup installed modules */
+    for (i = 0; i < state.modulescount; i++) {
+        m = state.modules[i];
+        if (m->dtor && m->dtor(m)) {
+            ERROR("pcaio_module_%s_dtor", m->name);
+        }
+    }
+
     state.config = NULL;
     state.cancel = true;
     return 0;
@@ -86,7 +114,9 @@ master_deinit() {
 
 int
 master() {
+    int i;
     struct threadpool *tp;
+    struct pcaio_module *m;
 
     /* scale the threadpool to minimum capacity */
     tp = &state.pool;
@@ -96,6 +126,14 @@ master() {
     }
 
     while ((!state.cancel) && (state.tasks)) {
+        /* modules tick */
+        for (i = 0; i < state.modulescount; i++) {
+            m = state.modules[i];
+            // TODO: config timeout us
+            if (m->tick && m->tick(1000)) {
+                ERROR("pcaio_module_%s_tick", m->name);
+            }
+        }
         sleep(.3);
     }
 

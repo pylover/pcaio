@@ -20,12 +20,27 @@
 #define INCLUDE_PCAIO_PCAIO_H_
 
 
+enum taskflags {
+    TASK_TERMINATED = 0x1,
+    TASK_NOSCHEDULE = 0x2,
+};
+
+
 struct pcaio;
 struct pcaio_task;
+struct pcaio_module;
 typedef int (*pcaio_taskmain_t) (int argc, void *argv[]);
 
 
-/* this structure must be filled by user */
+struct pcaio_module {
+    const char *name;
+    int (*init)();
+    int (*dtor)();
+    int (*tick)(unsigned int timeout_us);
+};
+
+
+/* this structure must be provided by the user */
 struct pcaio_config {
     unsigned short workers_min;
     unsigned short workers_max;
@@ -44,12 +59,20 @@ int
 pcaio_task_free(struct pcaio_task *t);
 
 
+int
+pcaio_schedule(struct pcaio_task *t);
+
+
 struct pcaio_task *
 pcaio_self();
 
 
 int
-pcaio_relax();
+pcaio_relax(int flags);
+
+
+int
+pcaio_module_install(struct pcaio_module *m);
 
 
 int

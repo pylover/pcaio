@@ -21,6 +21,7 @@
 
 
 /* local private */
+#include "config.h"
 #include "task.h"
 #include "threadpool.h"
 
@@ -29,11 +30,20 @@
 
 
 struct master {
+    /* provided by user */
+    struct pcaio_config *config;
+
+    /* atomic vars used for process exit condition */
     atomic_bool cancel;
     atomic_uint tasks;
-    struct pcaio_config *config;
+
+    /* the famous taskqueue/threadpool couple */
     struct taskqueue taskq;
     struct threadpool pool;
+
+    /* vector of modules pointer*/
+    unsigned char modulescount;
+    struct pcaio_module *modules[CONFIG_PCAIO_MODULES_MAX];
 };
 
 

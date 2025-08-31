@@ -37,14 +37,15 @@ _config = {
     .workers_max = WORKERS,
 };
 
+
 static int
 _subtask(int argc, void *argv[]) {
     struct pcaio_task *t = pcaio_self();
 
     INFO("subtask: %d started",  t);
-    pcaio_relax();
+    pcaio_relax(0);
     INFO("subtask: %d waked up",  t);
-    pcaio_relax();
+    pcaio_relax(0);
     INFO("subtask: %d done",  t);
     return 0;
 }
@@ -54,9 +55,9 @@ _task(int argc, void *argv[]) {
     struct pcaio_task *t = pcaio_self();
 
     INFO("task: %d started",  t);
-    pcaio_relax();
+    pcaio_relax(0);
     INFO("task: %d waked up",  t);
-    pcaio_relax();
+    pcaio_relax(0);
     INFO("task: %d done",  t);
     pcaio_fschedule(_subtask, 0);
     return 0;

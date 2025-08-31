@@ -12,7 +12,6 @@ include(CMakeDependentOption)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fms-extensions")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_GNU_SOURCE=1")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -lpthread")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
 
@@ -36,8 +35,9 @@ add_custom_target(fresh COMMAND cmake ${PROJECT_SOURCE_DIR} --fresh)
 include_directories(include)
 
 
-# core 
+# shared library 
 add_subdirectory(core)
+add_subdirectory(modules)
 add_library(pcaio SHARED
   $<TARGET_OBJECTS:threadpool>
   $<TARGET_OBJECTS:task>
@@ -45,7 +45,11 @@ add_library(pcaio SHARED
   $<TARGET_OBJECTS:worker>
   $<TARGET_OBJECTS:master>
   $<TARGET_OBJECTS:core>
+
+  # builtin modules
+  $<TARGET_OBJECTS:select>
 )
+target_link_libraries(pcaio PUBLIC m pthread)
 
 
 # Install

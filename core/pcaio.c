@@ -53,6 +53,17 @@ _signal(int sig) {
 
 
 int
+pcaio_schedule(struct pcaio_task *t) {
+    if (t == NULL) {
+        return -1;
+    }
+
+    taskqueue_push(&state.taskq, t);
+    return 0;
+}
+
+
+int
 pcaio_fschedule(pcaio_taskmain_t func, int argc, ...) {
     va_list args;
     struct pcaio_task *t;
@@ -117,7 +128,7 @@ pcaio_self() {
 /** this function will be called from worker threads.
  */
 int
-pcaio_relax() {
+pcaio_relax(int flags) {
     ucontext_t *ctx;
     struct pcaio_task *t;
 
@@ -142,12 +153,26 @@ pcaio_relax() {
     /* then clear the thread local task to indicate the worker is idle */
     threadlocaltask_set(NULL);
 
+    /* task flags */
+    t->flags |= flags;
+
     /* hollaaa, do the magic! */
     if (swapcontext(&(t->context), ctx)) {
         ERROR("out of memory for swapcontext(3)");
         return -1;
     }
 
+    return 0;
+}
+
+
+int
+pcaio_module_install(struct pcaio_module *m) {
+    if (state.modulescount == CONFIG_PCAIO_MODULES_MAX) {
+        return -1;
+    }
+
+    state.modules[state.modulescount++] = m;
     return 0;
 }
 

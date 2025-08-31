@@ -11,7 +11,6 @@ list(TRANSFORM testrules PREPEND test_)
 set(profilerules ${testrules})
 list(TRANSFORM profilerules APPEND _profile)
 add_custom_target(profile_tests DEPENDS ${profilerules})
-# add_library(helpers OBJECT helpers.c helpers.h)
 
 
 # Valgrind, Profiling
@@ -34,7 +33,7 @@ foreach (t IN LISTS testrules)
     "${PROJECT_BINARY_DIR}"
     "${PROJECT_SOURCE_DIR}"
   )
-  target_link_libraries(${t} pcaio clog)
+  target_link_libraries(${t} m pcaio clog)
   add_test(NAME ${t} COMMAND ${t})
 
   add_custom_target(${t}_exec 

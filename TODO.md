@@ -1,6 +1,12 @@
+- rename core to pcaio
+- await function call
 - prevent task twice scheduling
 - select(2)
 - epoll(7)
+
+## tunning
+- process's stack size
+- process's max openfiles & rlimits
 
 ## syscalls
 - futex(2) 

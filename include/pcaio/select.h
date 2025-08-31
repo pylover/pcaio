@@ -16,50 +16,24 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_TASK_H_
-#define CORE_TASK_H_
+#ifndef INCLUDE_PCAIO_SELECT_H_
+#define INCLUDE_PCAIO_SELECT_H_
 
-
-/* standard */
-#include <ucontext.h>
-
-/* local private */
-typedef struct pcaio_task task_t;
-#undef T
-#define T task
-#include "threadlocalT.h"
 
 /* local public */
-#undef T
-#define T task
-#include "pcaio/queueT.h"
-#include "pcaio/pcaio.h"
+#include "pcaio/io.h"
 
 
-struct pcaio_task {
-    /* used by anyone to flag the task */
-    int flags;
-
-    /* used by taskqueue */
-    struct pcaio_task *next;
-
-    /* used by worker */
-    struct ucontext_t context;
-
-    /* provided by the user */
-    int exitstatus;
-    pcaio_taskmain_t func;
-    int argc;
-    void *argv[];
-};
+int
+pcaio_modselect_use(unsigned short maxfileno);
 
 
-struct pcaio_task *
-task_new(pcaio_taskmain_t func, int argc, va_list args);
+int
+pcaio_modselect_wait(int fd, int events);
 
 
-void
-task_free(struct pcaio_task *t);
+int
+pcaio_modselect_monitor(struct pcaio_ioevent *e);
 
 
-#endif  // CORE_TASK_H_
+#endif  // INCLUDE_PCAIO_SELECT_H_

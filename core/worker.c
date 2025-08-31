@@ -80,6 +80,13 @@ worker(struct taskqueue *q) {
             continue;
         }
 
+        if (t->flags & TASK_NOSCHEDULE) {
+            /* task is holding by a module. so, do not schedule it until the
+             * module do it. */
+            t->flags &= ~TASK_NOSCHEDULE;
+            continue;
+        }
+
         /* re-schedule the task */
         taskqueue_push(q, t);
     }
