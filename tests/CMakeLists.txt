@@ -3,6 +3,7 @@ include(CTest)
 list(APPEND testrules
   api
   queueT
+  ringT
 )
 
 
