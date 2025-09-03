@@ -116,6 +116,7 @@ _tick(unsigned int timeout_us) {
             FD_SET(e->fd, &wfds);
         }
 
+        // TODO: register always
         if (e->events & IOERROR) {
             FD_SET(e->fd, &efds);
         }
@@ -129,12 +130,13 @@ _tick(unsigned int timeout_us) {
 
     nfds = select(_mod->maxfileno, &rfds, &wfds, &efds, &tv);
     if (nfds == -1) {
+        ERROR("select() -> nfds: %d", nfds);
         return -1;
     }
 
-    if (nfds == 0) {
-        return 0;
-    }
+    // if (nfds == 0) {
+    //     return 0;
+    // }
 
     for (i = 0; i < swapcount; i++) {
         e = _mod->swap[i];
@@ -151,10 +153,14 @@ _tick(unsigned int timeout_us) {
             ready |= IOERROR;
         }
 
-        if ((!ready) && pcaio_ioeventring_push(&_mod->events, e)) {
-            /* what the hell, the event queue is full.
-             * panic has been occured */
-            return -1;
+        if (!ready) {
+            if (pcaio_ioeventring_push(&_mod->events, e)) {
+                /* what the hell, the event queue is full.
+                 * panic has been occured */
+                ERROR("pcaio_ioeventring_push");
+                return -1;
+            }
+            continue;
         }
 
         e->events = ready;

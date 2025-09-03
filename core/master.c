@@ -72,7 +72,7 @@ master_init(struct pcaio_config *config) {
     for (i = 0; i < state.modulescount; i++) {
         m = state.modules[i];
         if (m->init && m->init(m)) {
-            ERROR("pcaio_module_%s_init", m->name);
+            ERROR("pcaio_mod%s_init", m->name);
             goto failed;
         }
     }
@@ -102,7 +102,7 @@ master_deinit() {
     for (i = 0; i < state.modulescount; i++) {
         m = state.modules[i];
         if (m->dtor && m->dtor(m)) {
-            ERROR("pcaio_module_%s_dtor", m->name);
+            ERROR("pcaio_mod%s_dtor", m->name);
         }
     }
 
@@ -115,6 +115,7 @@ master_deinit() {
 int
 master() {
     int i;
+    int ret = 0;
     struct threadpool *tp;
     struct pcaio_module *m;
 
@@ -130,19 +131,22 @@ master() {
         for (i = 0; i < state.modulescount; i++) {
             m = state.modules[i];
             // TODO: config timeout us
-            if (m->tick && m->tick(1000)) {
-                ERROR("pcaio_module_%s_tick", m->name);
+            if (m->tick && m->tick(10000)) {
+                ERROR("pcaio_mod%s_tick", m->name);
+                ret = -1;
+                goto done;
             }
         }
         sleep(.3);
     }
 
+done:
     INFO("shutting down all workers...");
     if (threadpool_scale(tp, 0)) {
         ERROR("threadpool_scale");
-        return -1;
+        ret = -1;
     }
 
     INFO("all workers have been shut down.");
-    return 0;
+    return ret;
 }

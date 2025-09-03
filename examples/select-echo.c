@@ -19,6 +19,7 @@
 /* standard */
 #include <stdio.h>
 #include <fcntl.h>
+#include <termios.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -30,51 +31,63 @@
 #include <pcaio/select.h>
 
 
-#define CHUNKSIZE 16
+#define CHUNKSIZE 80
 
 
 static int
-_urandom(int argc, void *argv[]) {
-    int i;
+_echo(int argc, void *argv[]) {
     int ret = 0;
     int bytes;
-    int fd = -1;
-    char buff[CHUNKSIZE];
-    unsigned short *val = (unsigned short *)buff;
+    char c[CHUNKSIZE];
 
-    fd = open("/dev/urandom", O_RDONLY | O_NONBLOCK);
-
-    for (i = 0; i < 10; i++) {
-        if (pcaio_modselect_wait(fd, IOREAD)) {
-            ERROR("pcaio_waitfd");
-        }
-        bytes = read(fd, buff, CHUNKSIZE);
+    printf("write something then press enter.\n");
+    for (;;) {
+        bytes = read(STDIN_FILENO, c, CHUNKSIZE);
         if (bytes == -1) {
+            if (IO_MUSTWAIT(errno)) {
+                errno = 0;
+                if (pcaio_modselect_wait(STDIN_FILENO, IOREAD)) {
+                    ERROR("pcaio_modselect_wait");
+                }
+                continue;
+            }
             ERROR("read(2)");
             ret = -1;
             break;
         }
 
         if (bytes == 0) {
+            /* end of file */
             break;
         }
 
-        INFO("urandom: %u", *val);
+        printf("%.*s", bytes, c);
     }
 
-    close(fd);
     return ret;
 }
 
 
 int
 main() {
+    int ret;
     struct pcaio_task *t;
     struct pcaio_config c = {
         .workers_min = 1,
         .workers_max = 1,
     };
-    pcaio_modselect_use(16);
-    t = pcaio_task_new(_urandom, 0);
-    return pcaio(&c, &t, 1);
+
+    /* make standard input nonblock */
+    fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL) | O_NONBLOCK);
+
+    /* create a task */
+    t = pcaio_task_new(_echo, 0);
+
+    /* register the select module */
+    pcaio_modselect_use(4);
+
+    /* main loop */
+    ret = pcaio(&c, &t, 1);
+
+    return ret;
 }
