@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_QUEUET_H_
-#define CORE_QUEUET_H_
+#ifndef INCLUDE_PCAIO_QUEUET_H_
+#define INCLUDE_PCAIO_QUEUET_H_
 
 
 /* posix */
@@ -35,7 +35,7 @@
 #define QWAIT 0x1
 
 
-#endif  // CORE_QUEUET_H_
+#endif  // INCLUDE_PCAIO_QUEUET_H_
 
 
 /* generic<template> definitions */
