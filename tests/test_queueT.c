@@ -28,8 +28,8 @@ typedef struct foo {
 /* local public */
 #undef T
 #define T foo
-#include "core/queueT.h"
-#include "core/queueT.c"
+#include "pcaio/queueT.h"
+#include "pcaio/queueT.c"
 
 
 void

@@ -28,9 +28,11 @@ typedef struct pcaio_task task_t;
 #undef T
 #define T task
 #include "threadlocalT.h"
-#include "queueT.h"
 
 /* local public */
+#undef T
+#define T task
+#include "pcaio/queueT.h"
 #include "pcaio/pcaio.h"
 
 
