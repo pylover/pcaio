@@ -65,6 +65,7 @@ task_new(pcaio_taskmain_t func, int argc, va_list args) {
 
     /* zero it */
     memset(t, 0, allocsize);
+    t->flags = 0;
 
     /* store entry point */
     t->func = func;
@@ -136,6 +137,9 @@ _taskmain(struct pcaio_task *t) {
     if (exitstatus) {
         ERROR("task %p exited with status: %d", t, exitstatus);
     }
+
+    /* clear the thread local task before landing */
+    threadlocaltask_set(NULL);
 
     /* tell the worker the task is completed and there is nothing to schedule
      * anymore. */

@@ -1,6 +1,7 @@
 list(APPEND examples
   minimal
   select-echo
+  select-pipe
 )
 
 

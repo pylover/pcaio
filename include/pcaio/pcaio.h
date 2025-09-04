@@ -26,6 +26,11 @@ enum taskflags {
 };
 
 
+enum moduleflags {
+    MOD_PANIC = 0x1,
+};
+
+
 struct pcaio;
 struct pcaio_task;
 struct pcaio_module;
@@ -34,6 +39,7 @@ typedef int (*pcaio_taskmain_t) (int argc, void *argv[]);
 
 struct pcaio_module {
     const char *name;
+    int flags;
     int (*init)();
     int (*dtor)();
     int (*tick)(unsigned int timeout_us);

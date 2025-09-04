@@ -7,9 +7,9 @@ list(APPEND testrules
 )
 
 
-list(TRANSFORM testrules PREPEND test_)
+list(TRANSFORM testrules PREPEND test-)
 set(profilerules ${testrules})
-list(TRANSFORM profilerules APPEND _profile)
+list(TRANSFORM profilerules APPEND -profile)
 add_custom_target(profile_tests DEPENDS ${profilerules})
 
 
@@ -36,15 +36,15 @@ foreach (t IN LISTS testrules)
   target_link_libraries(${t} m pcaio clog)
   add_test(NAME ${t} COMMAND ${t})
 
-  add_custom_target(${t}_exec 
+  add_custom_target(${t}-exec 
     COMMAND ctest --verbose -R "^${t}$"
     DEPENDS ${t} ${CMAKE_PROJECT_NAME}
   )
-  add_custom_target(${t}_debug 
+  add_custom_target(${t}-debug 
     COMMAND gdb --command=${PROJECT_SOURCE_DIR}/tests/${t}.gdb ./${t}
     DEPENDS ${t} ${CMAKE_PROJECT_NAME}
   )
-  add_custom_target(${t}_profile
+  add_custom_target(${t}-profile
     COMMAND "valgrind" ${VALGRIND_FLAGS} ${PROJECT_BINARY_DIR}/tests/${t}
     DEPENDS ${t} ${CMAKE_PROJECT_NAME}
   )

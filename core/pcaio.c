@@ -48,6 +48,7 @@ _defaultconfig = {
 
 static void
 _signal(int sig) {
+    WARN("signal received: %d", sig);
     state.cancel = true;
 }
 
@@ -162,6 +163,7 @@ pcaio_relax(int flags) {
         return -1;
     }
 
+    errno = 0;
     return 0;
 }
 

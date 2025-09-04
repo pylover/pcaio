@@ -116,6 +116,7 @@ int
 master() {
     int i;
     int ret = 0;
+    struct pcaio_task *t;
     struct threadpool *tp;
     struct pcaio_module *m;
 
@@ -126,25 +127,34 @@ master() {
         return -1;
     }
 
+    /* indicate this is the master thread */
+    threadlocalucontext_set(NULL);
+
+    /* main loop */
     while ((!state.cancel) && (state.tasks)) {
         /* modules tick */
         for (i = 0; i < state.modulescount; i++) {
             m = state.modules[i];
             // TODO: config timeout us
-            if (m->tick && m->tick(10000)) {
-                ERROR("pcaio_mod%s_tick", m->name);
-                ret = -1;
-                goto done;
+            if ((!(m->flags & MOD_PANIC)) && m->tick && m->tick(10000)) {
+                /* panic */
+                m->flags |= MOD_PANIC;
+                ERROR("mod%s panic", m->name);
             }
         }
         sleep(.3);
     }
 
-done:
     INFO("shutting down all workers...");
     if (threadpool_scale(tp, 0)) {
         ERROR("threadpool_scale");
         ret = -1;
+    }
+
+    INFO("freeup remaining tasks...");
+    while (taskqueue_pop(&state.taskq, &t, 0) == 0) {
+        DEBUG("free up: %p", t);
+        task_free(t);
     }
 
     INFO("all workers have been shut down.");

@@ -43,17 +43,9 @@ _echo(int argc, void *argv[]) {
     printf("write something then press enter.\n");
     for (;;) {
         bytes = read(STDIN_FILENO, c, CHUNKSIZE);
-        if (bytes == -1) {
-            if (IO_MUSTWAIT(errno)) {
-                errno = 0;
-                if (pcaio_modselect_wait(STDIN_FILENO, IOREAD)) {
-                    ERROR("pcaio_modselect_wait");
-                }
-                continue;
-            }
-            ERROR("read(2)");
-            ret = -1;
-            break;
+        if (bytes > 0) {
+            printf("%.*s", bytes, c);
+            continue;
         }
 
         if (bytes == 0) {
@@ -61,7 +53,18 @@ _echo(int argc, void *argv[]) {
             break;
         }
 
-        printf("%.*s", bytes, c);
+        if (!IO_MUSTWAIT(errno)) {
+            ERROR("read(2)");
+            ret = -1;
+            break;
+        }
+
+        errno = 0;
+        if (pcaio_modselect_wait(STDIN_FILENO, IOREAD)) {
+            ERROR("pcaio_modselect_wait");
+            ret = -1;
+            break;
+        }
     }
 
     return ret;

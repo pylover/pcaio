@@ -54,4 +54,8 @@ int
 threadpool_scale(struct threadpool *p, unsigned short count);
 
 
+int
+threadpool_killall(struct threadpool *p, int sig);
+
+
 #endif  // CORE_THREADPOOL_H_

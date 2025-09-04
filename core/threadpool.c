@@ -19,6 +19,7 @@
 /* standard */
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <errno.h>
 
 /* posix */
@@ -183,6 +184,20 @@ threadpool_scale(struct threadpool *tp, unsigned short count) {
 
     if (tp->count < count) {
         return _scaleup(tp, count - tp->count);
+    }
+
+    return 0;
+}
+
+
+int
+threadpool_killall(struct threadpool *p, int sig) {
+    int i;
+
+    for (i = 0; i < p->count; i++) {
+        if (pthread_kill(p->threads[i], sig)) {
+            return -1;
+        }
     }
 
     return 0;

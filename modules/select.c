@@ -78,6 +78,7 @@ _dtor() {
 static int
 _tick(unsigned int timeout_us) {
     int i;
+    int ret = 0;
     int ready;
     int nfds;
     struct timeval tv;
@@ -130,13 +131,14 @@ _tick(unsigned int timeout_us) {
 
     nfds = select(_mod->maxfileno, &rfds, &wfds, &efds, &tv);
     if (nfds == -1) {
+        /* io error, user interrupts or something else */
         ERROR("select() -> nfds: %d", nfds);
-        return -1;
-    }
 
-    // if (nfds == 0) {
-    //     return 0;
-    // }
+        /* clearing read & write filesets but errors */
+        FD_ZERO(&rfds);
+        FD_ZERO(&wfds);
+        ret = -1;
+    }
 
     for (i = 0; i < swapcount; i++) {
         e = _mod->swap[i];
@@ -149,7 +151,7 @@ _tick(unsigned int timeout_us) {
             ready |= IOWRITE;
         }
 
-        if (FD_ISSET(e->fd, &efds)) {
+        if ((nfds == -1) || FD_ISSET(e->fd, &efds)) {
             ready |= IOERROR;
         }
 
@@ -167,7 +169,7 @@ _tick(unsigned int timeout_us) {
         pcaio_schedule(e->task);
     }
 
-    return 0;
+    return ret;
 }
 
 
@@ -200,6 +202,10 @@ pcaio_modselect_wait(int fd, int events) {
     }
 
     if (pcaio_relax(TASK_NOSCHEDULE)) {
+        return -1;
+    }
+
+    if (e.events & IOERROR) {
         return -1;
     }
 
@@ -240,9 +246,11 @@ pcaio_modselect_use(unsigned short maxfileno) {
     }
 
     m->name = "select";
+    m->init = NULL;
     m->dtor = _dtor;
     m->tick = _tick;
     m->maxfileno = maxfileno;
+    m->flags = 0;
 
     if (pcaio_module_install((struct pcaio_module *)m)) {
         pcaio_ioeventring_deinit(&m->events);
