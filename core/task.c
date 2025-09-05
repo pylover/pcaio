@@ -41,7 +41,7 @@
 
 
 static void
-_taskmain(struct pcaio_task *t);
+_taskmain(unsigned int p1, unsigned int p2);
 
 
 struct pcaio_task *
@@ -49,6 +49,7 @@ task_new(pcaio_taskmain_t func, int argc, va_list args) {
     struct pcaio_task *t;
     void *stack;
     size_t allocsize;
+    unsigned long p;
 
     /* validate arguments */
     if (func == NULL) {
@@ -104,8 +105,11 @@ task_new(pcaio_taskmain_t func, int argc, va_list args) {
      * glibc 2.8, glibc makes some changes to makecontext(), to permit this on
      * some 64-bit architectures (e.g., x86-64).
      * */
-    // TODO: glibc >= 2.8 test macro
-    makecontext(&t->context, (void (*)(void))_taskmain, 1, t);
+
+    /* so, split the task pointer into two unsigned integers */
+    p = (long) t;
+    makecontext(&t->context, (void (*)(void))_taskmain, 2, p >> 32,
+            p & 0xffffffff);
 
     /* hollaaaa */
     atomic_fetch_add(&state.tasks, 1);
@@ -128,9 +132,14 @@ task_free(struct pcaio_task *t) {
 
 
 static void
-_taskmain(struct pcaio_task *t) {
+_taskmain(unsigned int p1, unsigned int p2) {
+    struct pcaio_task *t;
     int exitstatus;
     ucontext_t *landing;
+
+    /* ressemble the task pointer */
+    t = (struct pcaio_task *)(((long)p1) << 32 | p2);
+    asm volatile("" ::: "memory");
 
     /* execute the task's main function (aka start the task!) */
     exitstatus = t->func(t->argc, t->argv);

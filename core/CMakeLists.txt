@@ -7,5 +7,6 @@ add_library(core OBJECT pcaio.c ../include/pcaio/pcaio.h)
 
 set(CONFIG_PCAIO_STACKSIZE_DEFAULT 0x8000)
 set(CONFIG_PCAIO_MODULES_MAX 8)
+set(CONFIG_PCAIO_MODULETIMEOUT_US 10000)
 configure_file(config.h.in config.h @ONLY)
 include_directories(${PROJECT_SOURCE_DIR}/core ${PROJECT_BINARY_DIR}/core)

@@ -135,8 +135,8 @@ master() {
         /* modules tick */
         for (i = 0; i < state.modulescount; i++) {
             m = state.modules[i];
-            // TODO: config timeout us
-            if ((!(m->flags & MOD_PANIC)) && m->tick && m->tick(10000)) {
+            if ((!(m->flags & MOD_PANIC)) && m->tick
+                    && m->tick(CONFIG_PCAIO_MODULETIMEOUT_US)) {
                 /* panic */
                 m->flags |= MOD_PANIC;
                 ERROR("mod%s panic", m->name);
