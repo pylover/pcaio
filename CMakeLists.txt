@@ -36,7 +36,7 @@ include_directories(include)
 
 
 # shared library 
-add_subdirectory(core)
+add_subdirectory(pcaio)
 add_subdirectory(modules)
 add_library(pcaio SHARED
   $<TARGET_OBJECTS:threadpool>
@@ -44,7 +44,7 @@ add_library(pcaio SHARED
   $<TARGET_OBJECTS:context>
   $<TARGET_OBJECTS:worker>
   $<TARGET_OBJECTS:master>
-  $<TARGET_OBJECTS:core>
+  $<TARGET_OBJECTS:pcaio_>
 
   # builtin modules
   $<TARGET_OBJECTS:select>
