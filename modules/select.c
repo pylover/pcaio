@@ -117,11 +117,7 @@ _tick(unsigned int timeout_us) {
             FD_SET(e->fd, &wfds);
         }
 
-        // TODO: register always
-        if (e->events & IOERROR) {
-            FD_SET(e->fd, &efds);
-        }
-
+        FD_SET(e->fd, &efds);
         _mod->swap[swapcount++] = e;
     }
 
