@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_CONTEXT_H_
-#define CORE_CONTEXT_H_
+#ifndef PCAIO_CONTEXT_H_
+#define PCAIO_CONTEXT_H_
 
 
 /* standard */
@@ -29,4 +29,4 @@
 #include "threadlocalT.h"
 
 
-#endif  // CORE_CONTEXT_H_
+#endif  // PCAIO_CONTEXT_H_

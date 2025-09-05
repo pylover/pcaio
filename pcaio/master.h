@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_MASTER_H_
-#define CORE_MASTER_H_
+#ifndef PCAIO_MASTER_H_
+#define PCAIO_MASTER_H_
 
 
 /* local private */
@@ -62,4 +62,4 @@ int
 master();
 
 
-#endif  // CORE_MASTER_H_
+#endif  // PCAIO_MASTER_H_

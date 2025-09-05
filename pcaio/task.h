@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_TASK_H_
-#define CORE_TASK_H_
+#ifndef PCAIO_TASK_H_
+#define PCAIO_TASK_H_
 
 
 /* standard */
@@ -62,4 +62,4 @@ void
 task_free(struct pcaio_task *t);
 
 
-#endif  // CORE_TASK_H_
+#endif  // PCAIO_TASK_H_

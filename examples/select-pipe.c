@@ -90,7 +90,7 @@ retryw:
             break;
         }
 
-        pcaio_relax(0);
+        FEED(0);
     }
 
     close(fd);
@@ -126,7 +126,7 @@ _consumer(int argc, int argv[]) {
         }
 
         printf("%.*s\n", bytes, buff);
-        pcaio_relax(0);
+        FEED(0);
     }
 
     close(fd);

@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_WORKER_H_
-#define CORE_WORKER_H_
+#ifndef PCAIO_WORKER_H_
+#define PCAIO_WORKER_H_
 
 
 /* local private */
@@ -31,4 +31,4 @@ int
 worker(struct taskqueue *q);
 
 
-#endif  // CORE_WORKER_H_
+#endif  // PCAIO_WORKER_H_

@@ -197,7 +197,7 @@ pcaio_modselect_wait(int fd, int events) {
         return -1;
     }
 
-    if (pcaio_relax(TASK_NOSCHEDULE)) {
+    if (pcaio_feed(TASK_NOSCHEDULE)) {
         return -1;
     }
 

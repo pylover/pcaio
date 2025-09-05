@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_THREADPOOL_H_
-#define CORE_THREADPOOL_H_
+#ifndef PCAIO_THREADPOOL_H_
+#define PCAIO_THREADPOOL_H_
 
 /* standard */
 #include <stdatomic.h>
@@ -58,4 +58,4 @@ int
 threadpool_killall(struct threadpool *p, int sig);
 
 
-#endif  // CORE_THREADPOOL_H_
+#endif  // PCAIO_THREADPOOL_H_

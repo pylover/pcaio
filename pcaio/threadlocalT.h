@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_THREADLOCALT_H_
-#define CORE_THREADLOCALT_H_
+#ifndef PCAIO_THREADLOCALT_H_
+#define PCAIO_THREADLOCALT_H_
 
 
 /* generic stuff (must included once) */
@@ -32,7 +32,7 @@
 #define TLTYPE() TLNAME_EVALUATOR2(T, _t)
 
 
-#endif  // CORE_THREADLOCALT_H_
+#endif  // PCAIO_THREADLOCALT_H_
 
 
 typedef void (*TLNAME(_dtor))(TLTYPE() *val);

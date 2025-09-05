@@ -129,7 +129,7 @@ pcaio_self() {
 /** this function will be called from worker threads.
  */
 int
-pcaio_relax(int flags) {
+pcaio_feed(int flags) {
     ucontext_t *ctx;
     struct pcaio_task *t;
 
@@ -140,19 +140,16 @@ pcaio_relax(int flags) {
          * wierd situtation. ignoring it silenthly, fatal or at least a
          * warning?
          */
-        ERROR("trying to relax on a thread which it's local task is null");
+        ERROR("trying to feed on a thread which it's local task is null");
         return -1;
     }
 
     /* retrieve the thread local ucontext and task */
     ctx = threadlocalucontext_get();
     if (ctx == NULL) {
-        ERROR("trying to relax on a thread which it's local context is null");
+        ERROR("trying to feed on a thread which it's local context is null");
         return -1;
     }
-
-    /* then clear the thread local task to indicate the worker is idle */
-    threadlocaltask_set(NULL);
 
     /* task flags */
     t->flags |= flags;

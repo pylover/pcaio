@@ -27,8 +27,8 @@
 #include <pcaio/pcaio.h>
 
 
-#define TASKS_MAX 60
-#define WORKERS 3
+#define TASKS_MAX 1
+#define WORKERS 1
 
 
 static struct pcaio_config
@@ -39,27 +39,26 @@ _config = {
 
 
 static int
-_subtask(int argc, void *argv[]) {
-    struct pcaio_task *t = pcaio_self();
-
-    INFO("subtask: %d started",  t);
+_subtask() {
+    INFO("subtask: started");
     FEED(0);
-    INFO("subtask: %d waked up",  t);
+    INFO("subtask: waked up");
     FEED(0);
-    INFO("subtask: %d done",  t);
-    return 0;
+    INFO("subtask: done");
+    return 73;
 }
 
 static int
 _task(int argc, void *argv[]) {
-    struct pcaio_task *t = pcaio_self();
+    int v;
 
-    INFO("task: %d started",  t);
+    INFO("task: started");
     FEED(0);
-    INFO("task: %d waked up",  t);
+    v = _subtask();
+    INFO("task: subtask res: %d", v);
+    INFO("task: waked up");
     FEED(0);
-    INFO("task: %d done",  t);
-    pcaio_fschedule(_subtask, 0);
+    INFO("task: done");
     return 0;
 }
 

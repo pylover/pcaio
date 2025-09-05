@@ -20,6 +20,9 @@
 #define INCLUDE_PCAIO_PCAIO_H_
 
 
+#define FEED(f) pcaio_feed(f)
+
+
 enum taskflags {
     TASK_TERMINATED = 0x1,
     TASK_NOSCHEDULE = 0x2,
@@ -74,7 +77,7 @@ pcaio_self();
 
 
 int
-pcaio_relax(int flags);
+pcaio_feed(int flags);
 
 
 int

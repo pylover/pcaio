@@ -147,9 +147,6 @@ _taskmain(unsigned int p1, unsigned int p2) {
         ERROR("task %p exited with status: %d", t, exitstatus);
     }
 
-    /* clear the thread local task before landing */
-    threadlocaltask_set(NULL);
-
     /* tell the worker the task is completed and there is nothing to schedule
      * anymore. */
     t->flags |= TASK_TERMINATED;

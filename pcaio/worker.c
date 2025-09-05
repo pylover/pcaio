@@ -54,6 +54,7 @@ _cleanup(struct taskqueue *q) {
 
 int
 worker(struct taskqueue *q) {
+    int ret;
     int exitstatus = 0;
     ucontext_t landing;
     struct pcaio_task *t;
@@ -71,7 +72,9 @@ worker(struct taskqueue *q) {
         threadlocaltask_set(t);
 
         /* switch to task's context */
-        if (swapcontext(&landing, &t->context)) {
+        ret = swapcontext(&landing, &t->context);
+        threadlocaltask_set(NULL);
+        if (ret) {
             /* out of memory or something like this. trying to quit to free up
              * some resources. */
             ERROR("insufficient memory for swapcontext(3)");

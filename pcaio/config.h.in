@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef CORE_CONFIG_H_IN_
-#define CORE_CONFIG_H_IN_
+#ifndef PCAIO_CONFIG_H_IN_
+#define PCAIO_CONFIG_H_IN_
 
 
 #cmakedefine CONFIG_PCAIO_STACKSIZE_DEFAULT @CONFIG_PCAIO_STACKSIZE_DEFAULT@
@@ -25,4 +25,4 @@
 #cmakedefine CONFIG_PCAIO_MODULETIMEOUT_US @CONFIG_PCAIO_MODULETIMEOUT_US@
 
 
-#endif  // CORE_CONFIG_H_IN_
+#endif  // PCAIO_CONFIG_H_IN_
