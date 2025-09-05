@@ -59,8 +59,7 @@ pcaio_schedule(struct pcaio_task *t) {
         return -1;
     }
 
-    taskqueue_push(&state.taskq, t);
-    return 0;
+    return taskqueue_push(&state.taskq, t);
 }
 
 
@@ -78,8 +77,7 @@ pcaio_fschedule(pcaio_taskmain_t func, int argc, ...) {
         return -1;
     }
 
-    taskqueue_push(&state.taskq, t);
-    return 0;
+    return taskqueue_push(&state.taskq, t);
 }
 
 
@@ -179,7 +177,6 @@ pcaio_module_install(struct pcaio_module *m) {
 int
 pcaio(struct pcaio_config *c, struct pcaio_task *tasks[],
         unsigned short count) {
-    int i;
     int masterstatus;
     struct sigaction sigact;
 
@@ -206,8 +203,9 @@ pcaio(struct pcaio_config *c, struct pcaio_task *tasks[],
         return -1;
     }
 
-    for (i = 0; i < count; i++) {
-        taskqueue_push(&state.taskq, tasks[i]);
+    if (taskqueue_pushall(&state.taskq, tasks, count)) {
+        ERROR("taskqueue_pushall");
+        return -1;
     }
 
     masterstatus = master();

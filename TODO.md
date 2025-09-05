@@ -1,5 +1,3 @@
-- await function call
-- prevent task twice scheduling
 - epoll(7)
 - readme
 

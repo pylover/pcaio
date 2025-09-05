@@ -55,11 +55,11 @@ void
 QNAME(queue_deinit) (struct QNAME(queue) *q);
 
 
-void
+int
 QNAME(queue_push) (struct QNAME(queue) *q, QELTYP() *v);
 
 
-void
+int
 QNAME(queue_pushall) (struct QNAME(queue) *q, QELTYP() *v[], size_t count);
 
 

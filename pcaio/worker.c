@@ -99,7 +99,11 @@ worker(struct taskqueue *q) {
         }
 
         /* re-schedule the task */
-        taskqueue_push(q, t);
+        if (taskqueue_push(q, t)) {
+            /*  panic */
+            exitstatus = EINVAL;
+            goto done;
+        }
     }
 
 done:
