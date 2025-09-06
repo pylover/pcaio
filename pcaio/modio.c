@@ -108,3 +108,28 @@ retry:
     errno = 0;
     return bytes;
 }
+
+
+ssize_t
+await_write(int fd, void *buf, size_t count) {
+    ssize_t bytes;
+
+    FEED(0);
+
+retry:
+    bytes = write(fd, buf, count);
+    if (bytes == -1) {
+        if (!RETRY(errno)) {
+            return -1;
+        }
+
+        if (pcaio_modio_await(fd, IOWRITE)) {
+            return -1;
+        }
+
+        goto retry;
+    }
+
+    errno = 0;
+    return bytes;
+}

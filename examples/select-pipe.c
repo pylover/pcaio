@@ -32,19 +32,17 @@
 #include <pcaio/modselect.h>
 
 
-#define CHUNK 64
+#define CHUNKSIZE 64
 
 
 static int
 _producer(int argc, int argv[]) {
     int i;
     int j;
-    int bytes;
     int rfd;
     int fd = argv[0];
     int ret = 0;
-    int res;
-    unsigned char tmp[CHUNK];
+    unsigned char buff[CHUNKSIZE];
 
     rfd = open("/dev/urandom", O_NONBLOCK, O_RDONLY);
     if (rfd == -1) {
@@ -52,82 +50,41 @@ _producer(int argc, int argv[]) {
     }
 
     for (i = 0; i < 16; i++) {
-retryr:
-        bytes = read(rfd, tmp, CHUNK);
-        if ((bytes == -1) && RETRY(errno)) {
-            errno = 0;
-            pcaio_modselect_await(rfd, IOREAD);
-            goto retryr;
-        }
-
-        if (bytes == -1) {
-            ERROR("read(2)");
-            ret = -1;
+        ret = await_read(rfd, buff, CHUNKSIZE);
+        if (ret <= 0) {
             break;
         }
 
         /* encode */
-        for (j = 0; j < bytes; j++) {
-            if (tmp[j] > 127) {
-                tmp[j] %= 26;
-                tmp[j] += 97;
-            }
-            else {
-                tmp[j] %= 26;
-                tmp[j] += 65;
-            }
+        for (j = 0; j < ret; j++) {
+            buff[j] = (buff[j] % 26) + (buff[j] & 0x80? 97: 65);
         }
 
-retryw:
-        res = write(fd, tmp, bytes);
-        if ((res == -1) && (RETRY(errno))) {
-            pcaio_modselect_await(fd, IOWRITE);
-            goto retryw;
-        }
-
-        if (res == -1) {
-            ERROR("write(2)");
-            ret = -1;
+        ret = await_write(fd, buff, ret);
+        if (ret <= 0) {
             break;
         }
-
-        FEED(0);
     }
 
     close(fd);
     close(rfd);
-    return ret;
+    return ret > 0? 0: ret;
 }
 
 
 static int
 _consumer(int argc, int argv[]) {
     int fd = argv[0];
-    int ret = 0;
-    int bytes;
-    char buff[CHUNK];
+    int ret;
+    char buff[CHUNKSIZE];
 
     for (;;) {
-        bytes = read(fd, buff, CHUNK);
-        if ((bytes == -1) && RETRY(errno)) {
-            errno = 0;
-            pcaio_modselect_await(fd, IOREAD);
-            continue;
-        }
-
-        if (bytes == -1) {
-            ERROR("read(2)");
-            ret = -1;
+        ret = await_read(fd, buff, CHUNKSIZE);
+        if (ret <= 0) {
             break;
         }
 
-        if (bytes == 0) {
-            /* end of file */
-            break;
-        }
-
-        printf("%.*s\n", bytes, buff);
-        FEED(0);
+        printf("%.*s\n", ret, buff);
     }
 
     close(fd);
@@ -139,6 +96,7 @@ int
 main() {
     int ret;
     int q[2];
+    struct pcaio_iomodule *modselect;
     struct pcaio_task *t[2];
     struct pcaio_config c = {
         .workers_min = 2,
@@ -156,7 +114,8 @@ main() {
     t[1] = pcaio_task_new((pcaio_taskmain_t)_producer, 1, q[1]);
 
     /* register the select module */
-    pcaio_modselect_use(4, NULL);
+    pcaio_modselect_use(4, &modselect);
+    pcaio_modio_use(modselect);
 
     /* main loop */
     ret = pcaio(&c, t, 2);

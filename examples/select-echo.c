@@ -38,24 +38,16 @@
 static int
 _echo(int argc, void *argv[]) {
     int ret = 0;
-    int bytes;
-    char c[CHUNKSIZE];
+    char buff[CHUNKSIZE];
 
     printf("write something then press enter.\n");
     for (;;) {
-        bytes = await_read(STDIN_FILENO, c, CHUNKSIZE);
-        if (bytes == 0) {
-            /* end of file */
+        ret = await_read(STDIN_FILENO, buff, CHUNKSIZE);
+        if (ret <= 0) {
             break;
         }
 
-        if (bytes == -1) {
-            ERROR("await_read()");
-            ret = -1;
-            break;
-        }
-
-        printf("%.*s", bytes, c);
+        printf("%.*s", ret, buff);
     }
 
     return ret;
