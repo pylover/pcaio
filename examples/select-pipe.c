@@ -28,7 +28,8 @@
 
 /* pcaio */
 #include <pcaio/pcaio.h>
-#include <pcaio/select.h>
+#include <pcaio/modio.h>
+#include <pcaio/modselect.h>
 
 
 #define CHUNK 64
@@ -53,9 +54,9 @@ _producer(int argc, int argv[]) {
     for (i = 0; i < 16; i++) {
 retryr:
         bytes = read(rfd, tmp, CHUNK);
-        if ((bytes == -1) && IO_MUSTWAIT(errno)) {
+        if ((bytes == -1) && RETRY(errno)) {
             errno = 0;
-            pcaio_modselect_wait(rfd, IOREAD);
+            pcaio_modselect_await(rfd, SELREAD);
             goto retryr;
         }
 
@@ -79,8 +80,8 @@ retryr:
 
 retryw:
         res = write(fd, tmp, bytes);
-        if ((res == -1) && (IO_MUSTWAIT(errno))) {
-            pcaio_modselect_wait(fd, IOWRITE);
+        if ((res == -1) && (RETRY(errno))) {
+            pcaio_modselect_await(fd, SELWRITE);
             goto retryw;
         }
 
@@ -108,9 +109,9 @@ _consumer(int argc, int argv[]) {
 
     for (;;) {
         bytes = read(fd, buff, CHUNK);
-        if ((bytes == -1) && IO_MUSTWAIT(errno)) {
+        if ((bytes == -1) && RETRY(errno)) {
             errno = 0;
-            pcaio_modselect_wait(fd, IOREAD);
+            pcaio_modselect_await(fd, SELREAD);
             continue;
         }
 
@@ -155,7 +156,7 @@ main() {
     t[1] = pcaio_task_new((pcaio_taskmain_t)_producer, 1, q[1]);
 
     /* register the select module */
-    pcaio_modselect_use(4);
+    pcaio_modselect_use(4, NULL);
 
     /* main loop */
     ret = pcaio(&c, t, 2);

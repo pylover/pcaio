@@ -15,3 +15,6 @@
 - clone(2)
 - namespaces(7)
 - madvise(2)
+- pthreads(7)
+- select(2)
+- epoll(7)

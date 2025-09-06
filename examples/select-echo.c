@@ -28,7 +28,8 @@
 
 /* pcaio */
 #include <pcaio/pcaio.h>
-#include <pcaio/select.h>
+#include <pcaio/modio.h>
+#include <pcaio/modselect.h>
 
 
 #define CHUNKSIZE 80
@@ -45,6 +46,7 @@ _echo(int argc, void *argv[]) {
         bytes = read(STDIN_FILENO, c, CHUNKSIZE);
         if (bytes > 0) {
             printf("%.*s", bytes, c);
+            FEED(0);
             continue;
         }
 
@@ -53,15 +55,15 @@ _echo(int argc, void *argv[]) {
             break;
         }
 
-        if (!IO_MUSTWAIT(errno)) {
+        if (!RETRY(errno)) {
             ERROR("read(2)");
             ret = -1;
             break;
         }
 
         errno = 0;
-        if (pcaio_modselect_wait(STDIN_FILENO, IOREAD)) {
-            ERROR("pcaio_modselect_wait");
+        if (pcaio_modselect_await(STDIN_FILENO, SELREAD)) {
+            ERROR("pcaio_modselect_await");
             ret = -1;
             break;
         }
@@ -86,8 +88,8 @@ main() {
     /* create a task */
     t = pcaio_task_new(_echo, 0);
 
-    /* register the select module */
-    pcaio_modselect_use(4);
+    /* create and register the select module */
+    pcaio_modselect_use(4, NULL);
 
     /* main loop */
     ret = pcaio(&c, &t, 1);

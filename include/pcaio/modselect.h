@@ -16,20 +16,21 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef INCLUDE_PCAIO_SELECT_H_
-#define INCLUDE_PCAIO_SELECT_H_
+#ifndef INCLUDE_PCAIO_MODSELECT_H_
+#define INCLUDE_PCAIO_MODSELECT_H_
 
 
-/* local public */
-#include "pcaio/io.h"
-
-
-int
-pcaio_modselect_use(unsigned short maxfileno);
+#define SELREAD 0x1
+#define SELWRITE 0x2
+#define SELERROR 0x4
 
 
 int
-pcaio_modselect_wait(int fd, int events);
+pcaio_modselect_use(unsigned short maxfileno, struct pcaio_iomodule **out);
 
 
-#endif  // INCLUDE_PCAIO_SELECT_H_
+int
+pcaio_modselect_await(int fd, int events);
+
+
+#endif  // INCLUDE_PCAIO_MODSELECT_H_

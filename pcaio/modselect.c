@@ -30,20 +30,28 @@
 #include <clog.h>
 
 /* local public */
-#include "pcaio/io.h"
-#include "pcaio/select.h"
+#include "pcaio/pcaio.h"
+#include "pcaio/modio.h"
+#include "pcaio/modselect.h"
+
+
+typedef struct selev {
+    int fd;
+    int events;
+    struct pcaio_task *task;
+} selev_t;
 #undef T
-#define T pcaio_ioevent
+#define T selev
 #include "pcaio/ringT.h"
 #include "pcaio/ringT.c"
 
 
-struct pcaio_modselect {
-    struct pcaio_module;
+struct modselect {
+    struct pcaio_iomodule;
 
     unsigned short maxfileno;
-    struct pcaio_ioeventring events;
-    struct pcaio_ioevent *swap[];
+    struct selevring events;
+    struct selev *swap[];
 };
 
 
@@ -59,7 +67,7 @@ struct pcaio_modselect {
 #define MAXFILENO 1024
 
 
-static struct pcaio_modselect *_mod = NULL;
+static struct modselect *_mod = NULL;
 
 
 static int
@@ -68,7 +76,7 @@ _dtor() {
         return -1;
     }
 
-    pcaio_ioeventring_deinit(&_mod->events);
+    selevring_deinit(&_mod->events);
     free(_mod);
     _mod = NULL;
     return 0;
@@ -82,7 +90,7 @@ _tick(unsigned int timeout_us) {
     int ready;
     int nfds;
     struct timeval tv;
-    struct pcaio_ioevent *e;
+    struct selev *e;
     unsigned short swapcount;
     fd_set rfds;
     fd_set wfds;
@@ -100,7 +108,7 @@ _tick(unsigned int timeout_us) {
     FD_ZERO(&efds);
     swapcount = 0;
     while (swapcount < _mod->maxfileno) {
-        if (pcaio_ioeventring_pop(&_mod->events, &e)) {
+        if (selevring_pop(&_mod->events, &e)) {
             break;
         }
 
@@ -109,11 +117,11 @@ _tick(unsigned int timeout_us) {
             return -1;
         }
 
-        if (e->events & IOREAD) {
+        if (e->events & SELREAD) {
             FD_SET(e->fd, &rfds);
         }
 
-        if (e->events & IOWRITE) {
+        if (e->events & SELWRITE) {
             FD_SET(e->fd, &wfds);
         }
 
@@ -140,22 +148,22 @@ _tick(unsigned int timeout_us) {
         e = _mod->swap[i];
         ready = 0;
         if (FD_ISSET(e->fd, &rfds)) {
-            ready |= IOREAD;
+            ready |= SELREAD;
         }
 
         if (FD_ISSET(e->fd, &wfds)) {
-            ready |= IOWRITE;
+            ready |= SELWRITE;
         }
 
         if ((nfds == -1) || FD_ISSET(e->fd, &efds)) {
-            ready |= IOERROR;
+            ready |= SELERROR;
         }
 
         if (!ready) {
-            if (pcaio_ioeventring_push(&_mod->events, e)) {
+            if (selevring_push(&_mod->events, e)) {
                 /* what the hell, the event queue is full.
                  * panic has been occured */
-                ERROR("pcaio_ioeventring_push");
+                ERROR("selevring_push");
                 return -1;
             }
             continue;
@@ -170,8 +178,8 @@ _tick(unsigned int timeout_us) {
 
 
 int
-pcaio_modselect_wait(int fd, int events) {
-    struct pcaio_ioevent e;
+pcaio_modselect_await(int fd, int events) {
+    struct selev e;
     struct pcaio_task *t;
 
     if ((fd < 0) || (fd > _mod->maxfileno) || (events == 0)) {
@@ -187,7 +195,7 @@ pcaio_modselect_wait(int fd, int events) {
     e.task = t;
     e.fd = fd;
 
-    if (pcaio_ioeventring_push(&_mod->events, &e)) {
+    if (selevring_push(&_mod->events, &e)) {
         return -1;
     }
 
@@ -195,7 +203,7 @@ pcaio_modselect_wait(int fd, int events) {
         return -1;
     }
 
-    if (e.events & IOERROR) {
+    if (e.events & SELERROR) {
         return -1;
     }
 
@@ -204,11 +212,11 @@ pcaio_modselect_wait(int fd, int events) {
 
 
 int
-pcaio_modselect_use(unsigned short maxfileno) {
+pcaio_modselect_use(unsigned short maxfileno, struct pcaio_iomodule **out) {
     size_t sz;
     unsigned char eventring_storagebits;
     struct rlimit limits;
-    struct pcaio_modselect *m;
+    struct modselect *m;
 
     if (maxfileno > MAXFILENO) {
         return -1;
@@ -222,15 +230,15 @@ pcaio_modselect_use(unsigned short maxfileno) {
         return -1;
     }
 
-    sz = sizeof(struct pcaio_modselect)
-        + sizeof(struct pcaio_ioevent*) * maxfileno;
+    sz = sizeof(struct modselect)
+        + sizeof(struct selev*) * maxfileno;
     m = malloc(sz);
     if (m == NULL) {
         return -1;
     }
 
     eventring_storagebits = (unsigned char)ceil(log2(maxfileno));
-    if (pcaio_ioeventring_init(&m->events, eventring_storagebits)) {
+    if (selevring_init(&m->events, eventring_storagebits)) {
         free(m);
         return -1;
     }
@@ -239,15 +247,19 @@ pcaio_modselect_use(unsigned short maxfileno) {
     m->init = NULL;
     m->dtor = _dtor;
     m->tick = _tick;
+    m->await = pcaio_modselect_await;
     m->maxfileno = maxfileno;
     m->flags = 0;
 
     if (pcaio_module_install((struct pcaio_module *)m)) {
-        pcaio_ioeventring_deinit(&m->events);
+        selevring_deinit(&m->events);
         free(m);
         return -1;
     }
 
     _mod = m;
+    if (out) {
+        *out = (struct pcaio_iomodule*)m;
+    }
     return 0;
 }

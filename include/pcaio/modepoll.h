@@ -16,29 +16,16 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef INCLUDE_PCAIO_IO_H_
-#define INCLUDE_PCAIO_IO_H_
+#ifndef INCLUDE_PCAIO_EPOLL_H_
+#define INCLUDE_PCAIO_EPOLL_H_
 
 
-/* statndard */
-#include <errno.h>
-
-/* local public */
-#include <pcaio/pcaio.h>
+int
+pcaio_modepoll_use();
 
 
-#define IOREAD 0x1
-#define IOWRITE 0x2
-#define IOERROR 0x4
-#define IO_MUSTWAIT(e) \
-    (((e) == EAGAIN) || ((e) == EWOULDBLOCK) || ((e) == EINPROGRESS))
+int
+pcaio_modepoll_wait(int fd, int events);
 
 
-typedef struct pcaio_ioevent {
-    int fd;
-    int events;
-    struct pcaio_task *task;
-} pcaio_ioevent_t;
-
-
-#endif  // INCLUDE_PCAIO_IO_H_
+#endif  // INCLUDE_PCAIO_EPOLL_H_

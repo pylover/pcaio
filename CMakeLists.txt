@@ -37,7 +37,6 @@ include_directories(include)
 
 # shared library 
 add_subdirectory(pcaio)
-add_subdirectory(modules)
 add_library(pcaio SHARED
   $<TARGET_OBJECTS:threadpool>
   $<TARGET_OBJECTS:task>
@@ -47,7 +46,8 @@ add_library(pcaio SHARED
   $<TARGET_OBJECTS:pcaio_>
 
   # builtin modules
-  $<TARGET_OBJECTS:select>
+  $<TARGET_OBJECTS:modio>
+  $<TARGET_OBJECTS:modselect>
 )
 target_link_libraries(pcaio PUBLIC m pthread)
 
