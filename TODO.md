@@ -1,4 +1,5 @@
 - epoll(7)
+- io_uring(7)
 - readme
 
 ## tunning
