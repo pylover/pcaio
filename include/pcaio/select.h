@@ -32,8 +32,4 @@ int
 pcaio_modselect_wait(int fd, int events);
 
 
-int
-pcaio_modselect_monitor(struct pcaio_ioevent *e);
-
-
 #endif  // INCLUDE_PCAIO_SELECT_H_

@@ -170,12 +170,6 @@ _tick(unsigned int timeout_us) {
 
 
 int
-pcaio_modselect_monitor(struct pcaio_ioevent *e) {
-    return pcaio_ioeventring_push(&_mod->events, e);
-}
-
-
-int
 pcaio_modselect_wait(int fd, int events) {
     struct pcaio_ioevent e;
     struct pcaio_task *t;
@@ -193,7 +187,7 @@ pcaio_modselect_wait(int fd, int events) {
     e.task = t;
     e.fd = fd;
 
-    if (pcaio_modselect_monitor(&e)) {
+    if (pcaio_ioeventring_push(&_mod->events, &e)) {
         return -1;
     }
 
