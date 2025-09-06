@@ -56,7 +56,7 @@ retryr:
         bytes = read(rfd, tmp, CHUNK);
         if ((bytes == -1) && RETRY(errno)) {
             errno = 0;
-            pcaio_modselect_await(rfd, SELREAD);
+            pcaio_modselect_await(rfd, IOREAD);
             goto retryr;
         }
 
@@ -81,7 +81,7 @@ retryr:
 retryw:
         res = write(fd, tmp, bytes);
         if ((res == -1) && (RETRY(errno))) {
-            pcaio_modselect_await(fd, SELWRITE);
+            pcaio_modselect_await(fd, IOWRITE);
             goto retryw;
         }
 
@@ -111,7 +111,7 @@ _consumer(int argc, int argv[]) {
         bytes = read(fd, buff, CHUNK);
         if ((bytes == -1) && RETRY(errno)) {
             errno = 0;
-            pcaio_modselect_await(fd, SELREAD);
+            pcaio_modselect_await(fd, IOREAD);
             continue;
         }
 

@@ -117,11 +117,11 @@ _tick(unsigned int timeout_us) {
             return -1;
         }
 
-        if (e->events & SELREAD) {
+        if (e->events & IOREAD) {
             FD_SET(e->fd, &rfds);
         }
 
-        if (e->events & SELWRITE) {
+        if (e->events & IOWRITE) {
             FD_SET(e->fd, &wfds);
         }
 
@@ -148,15 +148,15 @@ _tick(unsigned int timeout_us) {
         e = _mod->swap[i];
         ready = 0;
         if (FD_ISSET(e->fd, &rfds)) {
-            ready |= SELREAD;
+            ready |= IOREAD;
         }
 
         if (FD_ISSET(e->fd, &wfds)) {
-            ready |= SELWRITE;
+            ready |= IOWRITE;
         }
 
         if ((nfds == -1) || FD_ISSET(e->fd, &efds)) {
-            ready |= SELERROR;
+            ready |= IOERROR;
         }
 
         if (!ready) {
@@ -203,7 +203,7 @@ pcaio_modselect_await(int fd, int events) {
         return -1;
     }
 
-    if (e.events & SELERROR) {
+    if (e.events & IOERROR) {
         return -1;
     }
 
@@ -249,7 +249,6 @@ pcaio_modselect_use(unsigned short maxfileno, struct pcaio_iomodule **out) {
     m->tick = _tick;
     m->await = pcaio_modselect_await;
     m->maxfileno = maxfileno;
-    m->flags = 0;
 
     if (pcaio_module_install((struct pcaio_module *)m)) {
         selevring_deinit(&m->events);

@@ -43,30 +43,19 @@ _echo(int argc, void *argv[]) {
 
     printf("write something then press enter.\n");
     for (;;) {
-        bytes = read(STDIN_FILENO, c, CHUNKSIZE);
-        if (bytes > 0) {
-            printf("%.*s", bytes, c);
-            FEED(0);
-            continue;
-        }
-
+        bytes = await_read(STDIN_FILENO, c, CHUNKSIZE);
         if (bytes == 0) {
             /* end of file */
             break;
         }
 
-        if (!RETRY(errno)) {
-            ERROR("read(2)");
+        if (bytes == -1) {
+            ERROR("await_read()");
             ret = -1;
             break;
         }
 
-        errno = 0;
-        if (pcaio_modselect_await(STDIN_FILENO, SELREAD)) {
-            ERROR("pcaio_modselect_await");
-            ret = -1;
-            break;
-        }
+        printf("%.*s", bytes, c);
     }
 
     return ret;
@@ -76,6 +65,7 @@ _echo(int argc, void *argv[]) {
 int
 main() {
     int ret;
+    struct pcaio_iomodule *modselect;
     struct pcaio_task *t;
     struct pcaio_config c = {
         .workers_min = 1,
@@ -89,7 +79,8 @@ main() {
     t = pcaio_task_new(_echo, 0);
 
     /* create and register the select module */
-    pcaio_modselect_use(4, NULL);
+    pcaio_modselect_use(4, &modselect);
+    pcaio_modio_use(modselect);
 
     /* main loop */
     ret = pcaio(&c, &t, 1);

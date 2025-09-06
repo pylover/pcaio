@@ -16,8 +16,8 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
-#ifndef INCLUDE_PCAIO_EPOLL_H_
-#define INCLUDE_PCAIO_EPOLL_H_
+#ifndef INCLUDE_PCAIO_MODEPOLL_H_
+#define INCLUDE_PCAIO_MODEPOLL_H_
 
 
 int
@@ -28,4 +28,4 @@ int
 pcaio_modepoll_wait(int fd, int events);
 
 
-#endif  // INCLUDE_PCAIO_EPOLL_H_
+#endif  // INCLUDE_PCAIO_MODEPOLL_H_

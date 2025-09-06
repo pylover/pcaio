@@ -20,11 +20,6 @@
 #define INCLUDE_PCAIO_MODSELECT_H_
 
 
-#define SELREAD 0x1
-#define SELWRITE 0x2
-#define SELERROR 0x4
-
-
 int
 pcaio_modselect_use(unsigned short maxfileno, struct pcaio_iomodule **out);
 

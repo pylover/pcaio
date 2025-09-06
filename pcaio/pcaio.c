@@ -169,6 +169,7 @@ pcaio_module_install(struct pcaio_module *m) {
         return -1;
     }
 
+    m->flags = 0;
     state.modules[state.modulescount++] = m;
     return 0;
 }

@@ -75,5 +75,36 @@ pcaio_modio_use(struct pcaio_iomodule *defmod) {
     _mod->tick = NULL;
 
     _mod->defaultmodule = defmod;
+
+    if (pcaio_module_install((struct pcaio_module *)_mod)) {
+        free(_mod);
+        _mod = NULL;
+        return -1;
+    }
     return 0;
+}
+
+
+ssize_t
+await_read(int fd, void *buf, size_t count) {
+    ssize_t bytes;
+
+    FEED(0);
+
+retry:
+    bytes = read(fd, buf, count);
+    if (bytes == -1) {
+        if (!RETRY(errno)) {
+            return -1;
+        }
+
+        if (pcaio_modio_await(fd, IOREAD)) {
+            return -1;
+        }
+
+        goto retry;
+    }
+
+    errno = 0;
+    return bytes;
 }

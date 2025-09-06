@@ -33,6 +33,9 @@ struct pcaio_iomodule {
 };
 
 
+#define IOREAD 0x1
+#define IOWRITE 0x2
+#define IOERROR 0x4
 #define RETRY(e) \
     (((e) == EAGAIN) || ((e) == EWOULDBLOCK) || ((e) == EINPROGRESS))
 
@@ -43,6 +46,10 @@ pcaio_modio_use(struct pcaio_iomodule *defmod);
 
 int
 pcaio_modio_await(int fd, int events);
+
+
+ssize_t
+await_read(int fd, void *buf, size_t count);
 
 
 #endif  // INCLUDE_PCAIO_MODIO_H_
