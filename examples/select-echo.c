@@ -60,8 +60,7 @@ main() {
     struct pcaio_iomodule *modselect;
     struct pcaio_task *t;
     struct pcaio_config c = {
-        .workers_min = 1,
-        .workers_max = 1,
+        .workers = 1,
     };
 
     /* make standard input nonblock */

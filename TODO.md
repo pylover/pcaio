@@ -1,11 +1,13 @@
 - io_uring(7)
 - readme
+- preemptive
 
 ## tunning
 - process's stack size
 - process's max openfiles & rlimits
 
-## syscalls
+## syscalls & manuals
+- stdarg(3)
 - futex(2) 
 - futex(7)
 - mmap(2)

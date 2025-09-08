@@ -99,8 +99,7 @@ main() {
     struct pcaio_iomodule *modselect;
     struct pcaio_task *t[2];
     struct pcaio_config c = {
-        .workers_min = 2,
-        .workers_max = 2,
+        .workers = 2,
     };
 
     /* create a pipe */

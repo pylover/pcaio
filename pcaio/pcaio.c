@@ -41,8 +41,7 @@
 
 static struct pcaio_config
 _defaultconfig = {
-    .workers_min = 1,
-    .workers_max = 1,
+    .workers = 1,
 };
 
 

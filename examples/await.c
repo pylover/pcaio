@@ -28,13 +28,11 @@
 
 
 #define TASKS_MAX 1
-#define WORKERS 1
 
 
 static struct pcaio_config
 _config = {
-    .workers_min = WORKERS,
-    .workers_max = WORKERS,
+    .workers = 1,
 };
 
 

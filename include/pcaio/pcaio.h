@@ -51,8 +51,7 @@ struct pcaio_module {
 
 /* this structure must be provided by the user */
 struct pcaio_config {
-    unsigned short workers_min;
-    unsigned short workers_max;
+    unsigned short workers;
 };
 
 
