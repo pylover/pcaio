@@ -57,6 +57,13 @@ target_link_libraries(pcaio PUBLIC m pthread)
 install(TARGETS pcaio DESTINATION "lib")
 install(FILES 
   include/pcaio/pcaio.h 
+  include/pcaio/modio.h 
+  include/pcaio/modepoll.h 
+  include/pcaio/modselect.h 
+  include/pcaio/queueT.h 
+  include/pcaio/queueT.c 
+  include/pcaio/ringT.h 
+  include/pcaio/ringT.c 
   DESTINATION "include/pcaio"
 )
 
