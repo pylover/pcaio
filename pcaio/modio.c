@@ -24,6 +24,9 @@
 
 /* local public */
 #include "pcaio/modio.h"
+#undef T
+#define T pcaio_ioevent
+#include "pcaio/ringT.c"
 
 
 struct modio {

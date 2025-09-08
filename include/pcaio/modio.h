@@ -25,6 +25,14 @@
 
 /* local public */
 #include "pcaio/pcaio.h"
+typedef struct pcaio_ioevent {
+    int fd;
+    int events;
+    struct pcaio_task *task;
+} pcaio_ioevent_t;
+#undef T
+#define T pcaio_ioevent
+#include "pcaio/ringT.h"
 
 
 struct pcaio_iomodule {
