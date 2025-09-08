@@ -31,7 +31,7 @@
 
 struct master {
     /* provided by user */
-    struct pcaio_config *config;
+    unsigned short workers;
 
     /* atomic vars used for process exit condition */
     atomic_bool cancel;
@@ -51,7 +51,7 @@ extern struct master state;
 
 
 int
-master_init(struct pcaio_config *config);
+master_init(unsigned short workers);
 
 
 int

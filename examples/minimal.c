@@ -31,12 +31,6 @@
 #define WORKERS 3
 
 
-static struct pcaio_config
-_config = {
-    .workers = WORKERS,
-};
-
-
 static int
 _subtask(int argc, void *argv[]) {
     struct pcaio_task *t = pcaio_self();
@@ -71,7 +65,7 @@ main() {
     for (i = 0; i < TASKS_MAX; i++) {
         tasks[i] = pcaio_task_new(_task, 0);
     }
-    pcaio(&_config, tasks, TASKS_MAX);
+    pcaio(WORKERS, tasks, TASKS_MAX);
     INFO("%ld tasks has been completed successfully", TASKS_MAX);
     return EXIT_SUCCESS;
 }

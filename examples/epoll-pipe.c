@@ -33,6 +33,7 @@
 
 
 #define CHUNKSIZE 64
+#define WORKERS 2
 
 
 static int
@@ -98,9 +99,6 @@ main() {
     int q[2];
     struct pcaio_iomodule *modepoll;
     struct pcaio_task *t[2];
-    struct pcaio_config c = {
-        .workers = 2,
-    };
 
     /* create a pipe */
     if (pipe2(q, O_NONBLOCK | O_DIRECT)) {
@@ -117,7 +115,7 @@ main() {
     pcaio_modio_use(modepoll);
 
     /* main loop */
-    ret = pcaio(&c, t, 2);
+    ret = pcaio(WORKERS, t, 2);
 
 done:
     return ret;

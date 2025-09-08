@@ -54,7 +54,7 @@ test_api() {
 
     hits = 0;
     memset(logs, 0, sizeof(int) * 6);
-    eqint(0, pcaio(NULL, tasks, 2));
+    eqint(0, pcaio(1, tasks, 2));
     eqint(6, hits);
     eqint(3, logs[0]);
     eqint(4, logs[1]);

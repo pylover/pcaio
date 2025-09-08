@@ -28,12 +28,7 @@
 
 
 #define TASKS_MAX 1
-
-
-static struct pcaio_config
-_config = {
-    .workers = 1,
-};
+#define WORKERS 1
 
 
 static int
@@ -69,7 +64,7 @@ main() {
     for (i = 0; i < TASKS_MAX; i++) {
         tasks[i] = pcaio_task_new(_task, 0);
     }
-    pcaio(&_config, tasks, TASKS_MAX);
+    pcaio(WORKERS, tasks, TASKS_MAX);
     INFO("%ld tasks has been completed successfully", TASKS_MAX);
     return EXIT_SUCCESS;
 }

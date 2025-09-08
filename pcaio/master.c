@@ -39,7 +39,7 @@
 
 
 struct master state = {
-    .config = NULL,
+    .workers = 0,
     .cancel = true,
     .tasks = 0,
     .modulescount = 0,
@@ -47,17 +47,17 @@ struct master state = {
 
 
 int
-master_init(struct pcaio_config *config) {
+master_init(unsigned short workers) {
     int i;
     struct pcaio_module *m;
 
-    if (state.config) {
+    if (state.workers) {
         ERROR("already initialized");
         return -1;
     }
 
     taskqueue_init(&state.taskq);
-    if (threadpool_init(&state.pool, config->workers, worker, &state.taskq)) {
+    if (threadpool_init(&state.pool, workers, worker, &state.taskq)) {
         taskqueue_deinit(&state.taskq);
         return -1;
     }
@@ -76,7 +76,7 @@ master_init(struct pcaio_config *config) {
         }
     }
 
-    state.config = config;
+    state.workers = workers;
     state.cancel = false;
     return 0;
 
@@ -105,7 +105,7 @@ master_deinit() {
         }
     }
 
-    state.config = NULL;
+    state.workers = 0;
     state.cancel = true;
     return 0;
 }
@@ -121,7 +121,7 @@ master() {
 
     /* scale the threadpool to minimum capacity */
     tp = &state.pool;
-    if (threadpool_scale(tp, state.config->workers)) {
+    if (threadpool_scale(tp, state.workers)) {
         ERROR("threadpool_scale");
         return -1;
     }

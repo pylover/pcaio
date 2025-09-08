@@ -39,12 +39,6 @@
 #include "pcaio/pcaio.h"
 
 
-static struct pcaio_config
-_defaultconfig = {
-    .workers = 1,
-};
-
-
 static void
 _signal(int sig) {
     WARN("signal received: %d", sig);
@@ -175,7 +169,7 @@ pcaio_module_install(struct pcaio_module *m) {
 
 
 int
-pcaio(struct pcaio_config *c, struct pcaio_task *tasks[],
+pcaio(unsigned short workers, struct pcaio_task *tasks[],
         unsigned short count) {
     int masterstatus;
     struct sigaction sigact;
@@ -185,8 +179,8 @@ pcaio(struct pcaio_config *c, struct pcaio_task *tasks[],
         return -1;
     }
 
-    if (master_init(c? c: &_defaultconfig)) {
-        ERROR("pcaio_init");
+    if (master_init(workers)) {
+        ERROR("master_init");
         return -1;
     }
 

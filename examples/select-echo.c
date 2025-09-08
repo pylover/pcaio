@@ -33,6 +33,7 @@
 
 
 #define CHUNKSIZE 80
+#define WORKERS 1
 
 
 static int
@@ -59,9 +60,6 @@ main() {
     int ret;
     struct pcaio_iomodule *modselect;
     struct pcaio_task *t;
-    struct pcaio_config c = {
-        .workers = 1,
-    };
 
     /* make standard input nonblock */
     fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL) | O_NONBLOCK);
@@ -74,7 +72,7 @@ main() {
     pcaio_modio_use(modselect);
 
     /* main loop */
-    ret = pcaio(&c, &t, 1);
+    ret = pcaio(WORKERS, &t, 1);
 
     return ret;
 }

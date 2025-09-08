@@ -50,11 +50,6 @@ struct pcaio_module {
 
 
 /* this structure must be provided by the user */
-struct pcaio_config {
-    unsigned short workers;
-};
-
-
 int
 pcaio_fschedule(pcaio_taskmain_t func, int argc, ...);
 
@@ -84,7 +79,7 @@ pcaio_module_install(struct pcaio_module *m);
 
 
 int
-pcaio(struct pcaio_config *c, struct pcaio_task *tasks[],
+pcaio(unsigned short workers, struct pcaio_task *tasks[],
         unsigned short count);
 
 
