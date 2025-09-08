@@ -3,6 +3,7 @@ list(APPEND examples
   await
   select-echo
   select-pipe
+  epoll-pipe
 )
 
 

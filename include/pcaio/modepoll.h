@@ -21,7 +21,7 @@
 
 
 int
-pcaio_modepoll_use();
+pcaio_modepoll_use(unsigned short maxevents, struct pcaio_iomodule **out);
 
 
 int

@@ -41,9 +41,9 @@ struct pcaio_iomodule {
 };
 
 
-#define IOREAD 0x1
-#define IOWRITE 0x2
-#define IOERROR 0x4
+#define IOIN 0x1
+#define IOOUT 0x4
+#define IOERR 0x8
 #define RETRY(e) \
     (((e) == EAGAIN) || ((e) == EWOULDBLOCK) || ((e) == EINPROGRESS))
 

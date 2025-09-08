@@ -19,15 +19,172 @@
 
 
 /* standard */
+#include <stdatomic.h>
+
 /* system */
+#include <sys/epoll.h>
+
 /* thirdparty */
 #include <clog.h>
 
 /* local public */
-#include "pcaio/io.h"
-#include "pcaio/epoll.h"
+#include "pcaio/modio.h"
+#include "pcaio/modepoll.h"
 
 
-struct pcaio_modepoll {
-    struct pcaio_module;
+struct modepoll {
+    struct pcaio_iomodule;
+
+    int fd;
+    unsigned short maxevents;
+    atomic_ushort waitingfiles;
+    struct epoll_event events[];
 };
+
+
+static struct modepoll *_mod = NULL;
+
+
+static int
+_init() {
+    int fd;
+
+    fd = epoll_create1(0);
+    if (fd == -1) {
+        return -1;
+    }
+
+    _mod->waitingfiles = 0;
+    _mod->fd = fd;
+    return 0;
+}
+
+
+static int
+_dtor() {
+    if (_mod == NULL) {
+        return -1;
+    }
+
+    close(_mod->fd);
+    free(_mod);
+    _mod = NULL;
+    return 0;
+}
+
+
+static int
+_tick(unsigned int timeout_us) {
+    int i;
+    int ret = 0;
+    int nfds;
+    struct pcaio_ioevent *e;
+
+    if (_mod->waitingfiles == 0) {
+        return 0;
+    }
+
+    errno = 0;
+    nfds = epoll_wait(_mod->fd, _mod->events, _mod->maxevents,
+            timeout_us / 1000);
+    if (nfds == 0) {
+        goto done;
+    }
+
+    if (nfds == -1) {
+        ERROR("epoll_wait() -> nfds: %d", nfds);
+        ret = -1;
+    }
+
+    for (i = 0; i < nfds; i++) {
+        e = (struct pcaio_ioevent*)_mod->events[i].data.ptr;
+        e->events = _mod->events[i].events;
+        if (nfds == -1) {
+            /* aka EPOLLERR */
+            e->events |= IOERR;
+        }
+
+        _mod->waitingfiles--;
+        pcaio_schedule(e->task);
+    }
+
+done:
+    return ret;
+}
+
+
+int
+pcaio_modepoll_await(int fd, int events) {
+    struct pcaio_ioevent e;
+    struct epoll_event ee;
+    struct pcaio_task *t;
+
+    if ((fd < 0) || (events == 0)) {
+        return -1;
+    }
+
+    t = pcaio_self();
+    if (t == NULL) {
+        return -1;
+    }
+
+    e.events = events;
+    e.task = t;
+    e.fd = fd;
+
+    ee.events = events;
+    ee.data.ptr = &e;
+    if (epoll_ctl(_mod->fd, EPOLL_CTL_MOD, fd, &ee)) {
+        if (epoll_ctl(_mod->fd, EPOLL_CTL_ADD, fd, &ee)) {
+            return -1;
+        }
+        errno = 0;
+    }
+
+    _mod->waitingfiles++;
+    if (pcaio_feed(TASK_NOSCHEDULE)) {
+        return -1;
+    }
+
+    if (e.events & IOERR) {
+        return -1;
+    }
+
+    return 0;
+}
+
+
+int
+pcaio_modepoll_use(unsigned short maxevents, struct pcaio_iomodule **out) {
+    size_t sz;
+    struct modepoll *m;
+
+    if (!maxevents) {
+        return -1;
+    }
+
+    sz = sizeof(struct modepoll)
+        + sizeof(struct epoll_event) * maxevents;
+    m = malloc(sz);
+    if (m == NULL) {
+        return -1;
+    }
+
+    m->name = "epoll";
+    m->init = _init;
+    m->dtor = _dtor;
+    m->tick = _tick;
+    m->await = pcaio_modepoll_await;
+    m->maxevents = maxevents;
+
+    if (pcaio_module_install((struct pcaio_module *)m)) {
+        free(m);
+        return -1;
+    }
+
+    _mod = m;
+    if (out) {
+        *out = (struct pcaio_iomodule*)m;
+    }
+    return 0;
+}

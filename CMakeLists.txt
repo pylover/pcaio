@@ -48,6 +48,7 @@ add_library(pcaio SHARED
   # builtin modules
   $<TARGET_OBJECTS:modio>
   $<TARGET_OBJECTS:modselect>
+  $<TARGET_OBJECTS:modepoll>
 )
 target_link_libraries(pcaio PUBLIC m pthread)
 

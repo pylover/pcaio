@@ -106,11 +106,11 @@ _tick(unsigned int timeout_us) {
             return -1;
         }
 
-        if (e->events & IOREAD) {
+        if (e->events & IOIN) {
             FD_SET(e->fd, &rfds);
         }
 
-        if (e->events & IOWRITE) {
+        if (e->events & IOOUT) {
             FD_SET(e->fd, &wfds);
         }
 
@@ -137,15 +137,15 @@ _tick(unsigned int timeout_us) {
         e = _mod->swap[i];
         ready = 0;
         if (FD_ISSET(e->fd, &rfds)) {
-            ready |= IOREAD;
+            ready |= IOIN;
         }
 
         if (FD_ISSET(e->fd, &wfds)) {
-            ready |= IOWRITE;
+            ready |= IOOUT;
         }
 
         if ((nfds == -1) || FD_ISSET(e->fd, &efds)) {
-            ready |= IOERROR;
+            ready |= IOERR;
         }
 
         if (!ready) {
@@ -192,7 +192,7 @@ pcaio_modselect_await(int fd, int events) {
         return -1;
     }
 
-    if (e.events & IOERROR) {
+    if (e.events & IOERR) {
         return -1;
     }
 

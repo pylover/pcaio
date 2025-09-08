@@ -101,7 +101,7 @@ retry:
             return -1;
         }
 
-        if (pcaio_modio_await(fd, IOREAD)) {
+        if (pcaio_modio_await(fd, IOIN)) {
             return -1;
         }
 
@@ -126,7 +126,7 @@ retry:
             return -1;
         }
 
-        if (pcaio_modio_await(fd, IOWRITE)) {
+        if (pcaio_modio_await(fd, IOOUT)) {
             return -1;
         }
 
