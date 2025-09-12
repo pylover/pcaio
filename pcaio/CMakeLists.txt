@@ -25,3 +25,6 @@ add_library(pcaio_ OBJECT pcaio.c ../include/pcaio/pcaio.h)
 add_library(modio OBJECT modio.c ../include/pcaio/modio.h)
 add_library(modselect OBJECT modselect.c ../include/pcaio/modselect.h)
 add_library(modepoll OBJECT modepoll.c ../include/pcaio/modepoll.h)
+
+# utils
+add_library(timer OBJECT timer.c ../include/pcaio/timer.h)

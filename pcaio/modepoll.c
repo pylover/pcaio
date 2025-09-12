@@ -85,7 +85,7 @@ _tick(unsigned int timeout_us) {
     }
 
     errno = 0;
-    nfds = epoll_wait(_mod->fd, _mod->events, _mod->maxevents,
+    nfds = epoll_wait(_mod->fd, _mod->events, _mod->waitingfiles,
             timeout_us / 1000);
     if (nfds == 0) {
         goto done;
@@ -104,7 +104,7 @@ _tick(unsigned int timeout_us) {
             e->events |= IOERR;
         }
 
-        _mod->waitingfiles--;
+        atomic_fetch_sub(&_mod->waitingfiles, 1);
         pcaio_schedule(e->task);
     }
 
@@ -132,7 +132,7 @@ pcaio_modepoll_await(int fd, int events) {
     e.task = t;
     e.fd = fd;
 
-    ee.events = events;
+    ee.events = events | EPOLLONESHOT;
     ee.data.ptr = &e;
     if (epoll_ctl(_mod->fd, EPOLL_CTL_MOD, fd, &ee)) {
         if (epoll_ctl(_mod->fd, EPOLL_CTL_ADD, fd, &ee)) {
@@ -141,7 +141,7 @@ pcaio_modepoll_await(int fd, int events) {
         errno = 0;
     }
 
-    _mod->waitingfiles++;
+    atomic_fetch_add(&_mod->waitingfiles, 1);
     if (pcaio_feed(TASK_NOSCHEDULE)) {
         return -1;
     }

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.7)
 project(pcaio 
-    VERSION 5.2.1
+    VERSION 1.0.0
     LANGUAGES C
 )
 include(CMakeDependentOption)
@@ -49,6 +49,9 @@ add_library(pcaio SHARED
   $<TARGET_OBJECTS:modio>
   $<TARGET_OBJECTS:modselect>
   $<TARGET_OBJECTS:modepoll>
+  
+  # utils
+  $<TARGET_OBJECTS:timer>
 )
 target_link_libraries(pcaio PUBLIC m pthread)
 
