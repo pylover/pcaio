@@ -18,7 +18,9 @@
  */
 
 
-/* standard */
+/* system */
+#include <sys/socket.h>
+
 /* thirdparty */
 #include <clog.h>
 
@@ -136,3 +138,59 @@ retry:
     errno = 0;
     return bytes;
 }
+
+
+int
+await_accept(int sockfd, struct sockaddr *restrict addr,
+        socklen_t *restrict addrlen) {
+    int fd;
+
+    FEED(0);
+
+retry:
+    fd = accept(sockfd, addr, addrlen);
+    if (fd == -1) {
+        if (!RETRY(errno)) {
+            return -1;
+        }
+
+        if (pcaio_modio_await(fd, IOIN)) {
+            return -1;
+        }
+
+        goto retry;
+    }
+
+    errno = 0;
+    return fd;
+}
+
+
+#ifdef _GNU_SOURCE
+
+int
+await_accept4(int sockfd, struct sockaddr *restrict addr,
+        socklen_t *restrict addrlen, int flags) {
+    int fd;
+
+    FEED(0);
+
+retry:
+    fd = accept4(sockfd, addr, addrlen, flags);
+    if (fd == -1) {
+        if (!RETRY(errno)) {
+            return -1;
+        }
+
+        if (pcaio_modio_await(fd, IOIN)) {
+            return -1;
+        }
+
+        goto retry;
+    }
+
+    errno = 0;
+    return fd;
+}
+
+#endif  // _GNU_SOURCE

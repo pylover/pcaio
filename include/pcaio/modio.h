@@ -23,6 +23,9 @@
 /* statndard */
 #include <errno.h>
 
+/* system */
+#include <sys/socket.h>
+
 /* local public */
 #include "pcaio/pcaio.h"
 typedef struct pcaio_ioevent {
@@ -62,6 +65,18 @@ await_read(int fd, void *buf, size_t count);
 
 ssize_t
 await_write(int fd, void *buf, size_t count);
+
+
+int
+await_accept(int sockfd, struct sockaddr *restrict addr,
+        socklen_t *restrict addrlen);
+
+
+#ifdef _GNU_SOURCE
+int
+await_accept4(int sockfd, struct sockaddr *restrict addr,
+        socklen_t *restrict addrlen, int flags);
+#endif  // _GNU_SOURCE
 
 
 #endif  // INCLUDE_PCAIO_MODIO_H_
