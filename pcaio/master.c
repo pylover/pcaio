@@ -116,10 +116,11 @@ master() {
     int i;
     int ret = 0;
     int tickstatus;
-    int any;
+    int any = 1;
     struct pcaio_task *t;
     struct threadpool *tp;
     struct pcaio_module *m;
+    unsigned int toutus;
 
     /* scale the threadpool to minimum capacity */
     tp = &state.pool;
@@ -134,11 +135,18 @@ master() {
     /* main loop */
     while ((!state.cancel) && (state.tasks)) {
         /* modules tick */
+        if (any) {
+            toutus = CONFIG_PCAIO_MODULETIMEOUT_SHORT_US;
+        }
+        else {
+            toutus = CONFIG_PCAIO_MODULETIMEOUT_LONG_US;
+            usleep(CONFIG_PCAIO_MODULETIMEOUT_LONG_US);
+        }
         any = 0;
         for (i = 0; i < state.modulescount; i++) {
             m = state.modules[i];
             if (((m->flags & MOD_PANIC) == 0) && m->tick) {
-                tickstatus = m->tick(CONFIG_PCAIO_MODULETIMEOUT_US);
+                tickstatus = m->tick(toutus);
                 if (tickstatus == PMSIDLE) {
                     continue;
                 }
@@ -154,10 +162,6 @@ master() {
             }
         }
 
-        // TODO: configure
-        if (!any) {
-            usleep(100 * 1000);
-        }
     }
 
     INFO("shutting down all workers...");
@@ -168,7 +172,6 @@ master() {
 
     INFO("freeup remaining tasks...");
     while (taskqueue_pop(&state.taskq, &t, 0) == 0) {
-        DEBUG("free up: %p", t);
         task_free(t);
     }
 

@@ -100,6 +100,10 @@ main() {
     struct pcaio_iomodule *modselect;
     struct pcaio_task *t[2];
 
+    /* register the select module */
+    pcaio_modselect_use(4, &modselect);
+    pcaio_modio_use(modselect);
+
     /* create a pipe */
     if (pipe2(q, O_NONBLOCK | O_DIRECT)) {
         ret = -1;
@@ -109,10 +113,6 @@ main() {
     /* create a task */
     t[0] = pcaio_task_new((pcaio_taskmain_t)_consumer, 1, q[0]);
     t[1] = pcaio_task_new((pcaio_taskmain_t)_producer, 1, q[1]);
-
-    /* register the select module */
-    pcaio_modselect_use(4, &modselect);
-    pcaio_modio_use(modselect);
 
     /* main loop */
     ret = pcaio(WORKERS, t, 2);

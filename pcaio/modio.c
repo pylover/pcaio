@@ -154,7 +154,7 @@ retry:
             return -1;
         }
 
-        if (pcaio_modio_await(fd, IOIN)) {
+        if (pcaio_modio_await(sockfd, IOIN)) {
             return -1;
         }
 
@@ -182,7 +182,7 @@ retry:
             return -1;
         }
 
-        if (pcaio_modio_await(fd, IOIN)) {
+        if (pcaio_modio_await(sockfd, IOIN)) {
             return -1;
         }
 
