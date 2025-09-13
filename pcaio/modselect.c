@@ -72,10 +72,10 @@ _dtor() {
 }
 
 
-static int
+static enum pcaio_module_tickstatus
 _tick(unsigned int timeout_us) {
     int i;
-    int ret = 0;
+    int ret = PMSAGAIN;
     int ready;
     int nfds;
     struct timeval tv;
@@ -86,7 +86,7 @@ _tick(unsigned int timeout_us) {
     fd_set efds;
 
     if (RINGT_ISEMPTY(&_mod->events)) {
-        return 0;
+        return PMSIDLE;;
     }
 
     tv.tv_usec = timeout_us % 1000000;
@@ -103,7 +103,7 @@ _tick(unsigned int timeout_us) {
 
         if (!e->events) {
             /* what the hell, event is empty! */
-            return -1;
+            return PMSPANIC;
         }
 
         if (e->events & IOIN) {
@@ -119,7 +119,7 @@ _tick(unsigned int timeout_us) {
     }
 
     if (swapcount == 0) {
-        return 0;
+        return PMSAGAIN;
     }
 
     nfds = select(_mod->maxfileno, &rfds, &wfds, &efds, &tv);
@@ -130,7 +130,7 @@ _tick(unsigned int timeout_us) {
         /* clearing read & write filesets but errors */
         FD_ZERO(&rfds);
         FD_ZERO(&wfds);
-        ret = -1;
+        ret = PMSPANIC;
     }
 
     for (i = 0; i < swapcount; i++) {
@@ -153,7 +153,7 @@ _tick(unsigned int timeout_us) {
                 /* what the hell, the event queue is full.
                  * panic has been occured */
                 ERROR("pcaio_ioeventring_push");
-                return -1;
+                return PMSPANIC;
             }
             continue;
         }

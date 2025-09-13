@@ -50,8 +50,8 @@ _task(int argc, void *argv[]) {
         INFO("task %d #%d sleep", id, i);
         if (pcaio_asleep_ms(timer, 50 + i * 100)) {
             ERROR("pcaio_asleep_ms");
+            break;
         }
-        // DEBUG("feed");
     }
 
     pcaio_timer_free(timer);

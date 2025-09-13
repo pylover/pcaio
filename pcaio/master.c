@@ -115,6 +115,8 @@ int
 master() {
     int i;
     int ret = 0;
+    int tickstatus;
+    int any;
     struct pcaio_task *t;
     struct threadpool *tp;
     struct pcaio_module *m;
@@ -132,16 +134,30 @@ master() {
     /* main loop */
     while ((!state.cancel) && (state.tasks)) {
         /* modules tick */
+        any = 0;
         for (i = 0; i < state.modulescount; i++) {
             m = state.modules[i];
-            if ((!(m->flags & MOD_PANIC)) && m->tick
-                    && m->tick(CONFIG_PCAIO_MODULETIMEOUT_US)) {
+            if (((m->flags & MOD_PANIC) == 0) && m->tick) {
+                tickstatus = m->tick(CONFIG_PCAIO_MODULETIMEOUT_US);
+                if (tickstatus == PMSIDLE) {
+                    continue;
+                }
+
+                if (tickstatus == PMSAGAIN) {
+                    any |= 1;
+                    continue;
+                }
+
                 /* panic */
                 m->flags |= MOD_PANIC;
                 ERROR("mod%s panic", m->name);
             }
         }
-        sleep(.3);
+
+        // TODO: configure
+        if (!any) {
+            usleep(100 * 1000);
+        }
     }
 
     INFO("shutting down all workers...");

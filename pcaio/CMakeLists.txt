@@ -1,7 +1,7 @@
 # configuration entries
 set(CONFIG_PCAIO_STACKSIZE_DEFAULT 0x8000)
 set(CONFIG_PCAIO_MODULES_MAX 8)
-set(CONFIG_PCAIO_MODULETIMEOUT_US 10000)
+set(CONFIG_PCAIO_MODULETIMEOUT_US 1000)
 configure_file(config.h.in config.h @ONLY)
 
 

@@ -40,12 +40,19 @@ struct pcaio_module;
 typedef int (*pcaio_taskmain_t) (int argc, void *argv[]);
 
 
+enum pcaio_module_tickstatus {
+    PMSIDLE,
+    PMSPANIC,
+    PMSAGAIN,
+};
+
+
 struct pcaio_module {
     const char *name;
     int flags;
     int (*init)();
     int (*dtor)();
-    int (*tick)(unsigned int timeout_us);
+    enum pcaio_module_tickstatus (*tick)(unsigned int timeout_us);
 };
 
 

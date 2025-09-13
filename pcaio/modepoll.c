@@ -73,15 +73,15 @@ _dtor() {
 }
 
 
-static int
+static enum pcaio_module_tickstatus
 _tick(unsigned int timeout_us) {
     int i;
-    int ret = 0;
+    int ret = PMSAGAIN;
     int nfds;
     struct pcaio_ioevent *e;
 
     if (_mod->waitingfiles == 0) {
-        return 0;
+        return PMSIDLE;
     }
 
     errno = 0;
@@ -93,7 +93,7 @@ _tick(unsigned int timeout_us) {
 
     if (nfds == -1) {
         ERROR("epoll_wait() -> nfds: %d", nfds);
-        ret = -1;
+        ret = PMSPANIC;
     }
 
     for (i = 0; i < nfds; i++) {
