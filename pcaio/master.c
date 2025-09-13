@@ -161,7 +161,6 @@ master() {
                 ERROR("mod%s panic", m->name);
             }
         }
-
     }
 
     INFO("shutting down all workers...");

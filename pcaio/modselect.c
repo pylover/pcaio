@@ -86,7 +86,7 @@ _tick(unsigned int timeout_us) {
     fd_set efds;
 
     if (RINGT_ISEMPTY(&_mod->events)) {
-        return PMSIDLE;;
+        return PMSIDLE;
     }
 
     tv.tv_usec = timeout_us % 1000000;
