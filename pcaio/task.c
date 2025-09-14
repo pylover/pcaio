@@ -85,6 +85,7 @@ task_new(pcaio_taskmain_t func, int argc, va_list args) {
     }
 
     /* allocate mem for stack */
+    // DEBUG("Stack size: %lu",  CONFIG_PCAIO_STACKSIZE_DEFAULT);
     stack = malloc(CONFIG_PCAIO_STACKSIZE_DEFAULT);
     if (stack == NULL) {
         free(t);
