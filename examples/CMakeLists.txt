@@ -3,6 +3,7 @@ list(APPEND examples
   await
   select_echo
   select_pipe
+  epoll_echo
   epoll_pipe
   asleep
 )
