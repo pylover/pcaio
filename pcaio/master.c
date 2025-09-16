@@ -169,7 +169,7 @@ master() {
         ret = -1;
     }
 
-    INFO("freeup remaining tasks...");
+    INFO("freeup remaining task(s)...");
     while (taskqueue_pop(&state.taskq, &t, 0) == 0) {
         task_free(t);
     }
