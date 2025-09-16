@@ -59,9 +59,5 @@ int
 LNAME(list_delete) (struct LNAME(list) *q, LTYPE() *v);
 
 
-// int
-// LNAME(_pushall) (struct LNAME() *q, T *v[], size_t count);
-//
-//
-// int
-// LNAME(_pop) (struct LNAME() *q, T **out, int flags);
+int
+LNAME(list_pop) (struct LNAME(list) *q, LTYPE() **v);

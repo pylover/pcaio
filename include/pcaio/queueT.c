@@ -33,6 +33,7 @@ QNAME(queue_init) (struct QNAME(queue) *q) {
 
     q->head = NULL;
     q->tail = NULL;
+    q->count = 0;
 }
 
 
@@ -42,6 +43,7 @@ QNAME(queue_deinit) (struct QNAME(queue) *q) {
     pthread_cond_destroy(&q->condition);
     q->head = NULL;
     q->tail = NULL;
+    q->count = 0;
 }
 
 
@@ -61,6 +63,7 @@ QNAME(queue_push) (struct QNAME(queue) *q, QTYPE() *v) {
         q->tail = v;
     }
 
+    q->count++;
     v->QNAME(queue_next) = NULL;
 
     pthread_cond_signal(&q->condition);
@@ -99,6 +102,7 @@ QNAME(queue_pushall) (struct QNAME(queue) *q, QTYPE() *v[], size_t count) {
         q->tail = v[i];
     }
 
+    q->count += count;
     q->tail->QNAME(queue_next) = NULL;
 
     pthread_cond_broadcast(&q->condition);
@@ -136,6 +140,7 @@ QNAME(queue_pop) (struct QNAME(queue) *q, QTYPE() **out, int flags) {
         o->QNAME(queue_next) = NULL;
     }
 
+    q->count--;
     *out = o;
 
 done:

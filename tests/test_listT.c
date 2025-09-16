@@ -35,6 +35,41 @@ typedef struct foo {
 
 
 static void
+test_listT_pop() {
+    struct foo first = {7, NULL, NULL};
+    struct foo second = {8, NULL, NULL};
+    struct foo third = {9, NULL, NULL};
+    struct foo *o;
+    struct foolist l = {NULL, NULL, 0};
+
+    foolist_init(&l);
+    foolist_append(&l, &first);
+    foolist_append(&l, &second);
+    foolist_append(&l, &third);
+    eqint(3, l.count);
+
+    eqint(0, foolist_pop(&l, &o));
+    eqptr(&first, o);
+    eqptr(&second, l.head);
+    eqptr(&third, l.tail);
+    isnull(first.foolist_prev);
+    isnull(first.foolist_next);
+    eqint(2, l.count);
+
+    eqint(0, foolist_pop(&l, &o));
+    eqint(0, foolist_pop(&l, &o));
+    eqptr(&third, o);
+    isnull(l.head);
+    isnull(l.tail);
+    isnull(first.foolist_prev);
+    isnull(first.foolist_next);
+    eqint(0, l.count);
+
+    foolist_deinit(&l);
+}
+
+
+static void
 test_listT() {
     struct foo first = {7, NULL, NULL};
     struct foo second = {8, NULL, NULL};
@@ -105,6 +140,7 @@ test_listT() {
 
 int
 main() {
+    test_listT_pop();
     test_listT();
     return EXIT_SUCCESS;
 }

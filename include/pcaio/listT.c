@@ -64,7 +64,7 @@ LNAME(list_append) (struct LNAME(list) *q, LTYPE() *v) {
 
 int
 LNAME(list_delete) (struct LNAME(list) *q, LTYPE() *v) {
-    if (v == NULL) {
+    if ((v == NULL) || (q->count == 0)) {
         return -1;
     }
 
@@ -113,76 +113,27 @@ failed:
 }
 
 
-// int
-// LNAME(_pushall) (struct LNAME() *q, T *v[], size_t count) {
-//     int i;
-//
-//     /* some guards */
-//     if (count == 0) {
-//         return -1;
-//     }
-//
-//     for (i = 0; i < count; i++) {
-//         if (v[i]->LNAME(_next) || (v[i] == q->tail)) {
-//             return -1;
-//         }
-//     }
-//
-//     /* take the ownership */
-//     pthread_mutex_lock(&q->mutex);
-//
-//     if (q->tail == NULL) {
-//         /* list is empty */
-//         q->tail = v[0];
-//         q->head = v[0];
-//     }
-//
-//     /* chain the rest */
-//     for (i = 1; i < count; i++) {
-//         q->tail->LNAME(_next) = v[i];
-//         q->tail = v[i];
-//     }
-//
-//     q->tail->LNAME(_next) = NULL;
-//
-//     pthread_cond_broadcast(&q->condition);
-//     pthread_mutex_unlock(&q->mutex);
-//     return 0;
-// }
-//
-//
-// int
-// LNAME(_pop) (struct LNAME() *q, T **out, int flags) {
-//     int ret = 0;
-//     T *o;
-//
-//     pthread_mutex_lock(&q->mutex);
-//     if (flags & QWAIT) {
-//         while (q->head == NULL) {
-//             if (pthread_cond_wait(&q->condition, &q->mutex)) {
-//                 ret = -1;
-//                 goto done;
-//             }
-//         }
-//     }
-//     else if (q->head == NULL) {
-//         ret = -1;
-//         goto done;
-//     }
-//
-//     o = q->head;
-//     if (o->LNAME(_next) == NULL) {
-//         q->head = NULL;
-//         q->tail = NULL;
-//     }
-//     else {
-//         q->head = o->LNAME(_next);
-//         o->LNAME(_next) = NULL;
-//     }
-//
-//     *out = o;
-//
-// done:
-//     pthread_mutex_unlock(&q->mutex);
-//     return ret;
-// }
+int
+LNAME(list_pop) (struct LNAME(list) *q, LTYPE() **v) {
+    LTYPE() *next;
+    if ((v == NULL) || (q->count == 0)) {
+        return -1;
+    }
+
+    pthread_mutex_lock(&q->mutex);
+    next = q->head->LNAME(list_next);
+    *v = q->head;
+    if (next) {
+        next->LNAME(list_prev) = NULL;
+        q->head = next;
+    }
+    else {
+        q->head = NULL;
+        q->tail = NULL;
+    }
+    (*v)->LNAME(list_next) = NULL;
+
+    q->count--;
+    pthread_mutex_unlock(&q->mutex);
+    return 0;
+}

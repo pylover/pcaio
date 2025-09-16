@@ -45,6 +45,7 @@ test_queueT() {
     fooqueue_init(&q);
     isnull(q.head);
     isnull(q.tail);
+    eqint(0, q.count);
 
     /* let's play with the Sheldon Cooper's favorite number. */
     fooqueue_push(&q, &foo73);
@@ -53,12 +54,14 @@ test_queueT() {
     isnull(foo73.fooqueue_next);
     eqptr(q.head, q.tail);
     eqptr(q.head, &foo73);
+    eqint(1, q.count);
 
     eqint(0, fooqueue_pop(&q, &out, 0));
     eqint(73, out->val);
     isnull(q.head);
     isnull(q.tail);
     isnull(out->fooqueue_next);
+    eqint(0, q.count);
 
     /* enqueue more than one item */
     fooqueue_push(&q, &foo73);
@@ -69,6 +72,7 @@ test_queueT() {
     eqptr(foo73.fooqueue_next, &foo74);
     eqptr(foo74.fooqueue_next, &foo75);
     isnull(foo75.fooqueue_next);
+    eqint(3, q.count);
 
     eqint(0, fooqueue_pop(&q, &out, 0));
     eqint(73, out->val);
@@ -76,6 +80,7 @@ test_queueT() {
     eqint(74, out->val);
     eqint(0, fooqueue_pop(&q, &out, 0));
     eqint(75, out->val);
+    eqint(0, q.count);
 
     isnull(q.head);
     isnull(q.tail);

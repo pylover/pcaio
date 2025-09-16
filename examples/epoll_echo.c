@@ -67,6 +67,7 @@ main() {
     /* create a task */
     t = pcaio_task_new(_echo, 0);
 
+    DEBUG("task: %p", t);
     /* create and register the epoll module */
     pcaio_modepoll_use(4, &modepoll);
     pcaio_modio_use(modepoll);

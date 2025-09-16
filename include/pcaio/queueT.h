@@ -42,6 +42,7 @@
 struct QNAME(queue) {
     QTYPE() *head;
     QTYPE() *tail;
+    size_t count;
     pthread_cond_t condition;
     pthread_mutex_t mutex;
 };

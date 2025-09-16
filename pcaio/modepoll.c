@@ -80,20 +80,20 @@ _tick(unsigned int timeout_us) {
     int ret = PMSAGAIN;
     int nfds;
     struct pcaio_ioevent *e;
-    sigset_t sigmask;
+    // sigset_t sigmask;
 
     if (_mod->waitingfiles == 0) {
         return PMSIDLE;
     }
 
     /* signals to wait */
-    sigemptyset(&sigmask);
+    // sigemptyset(&sigmask);
     // sigfillset(&sigmask);
     // sigaddset(&sigmask, SIGINT);
 
     errno = 0;
-    nfds = epoll_pwait(_mod->fd, _mod->events, _mod->waitingfiles,
-            timeout_us / 1000, &sigmask);
+    nfds = epoll_wait(_mod->fd, _mod->events, _mod->waitingfiles,
+            timeout_us / 1000);
     if (nfds == 0) {
         goto done;
     }
