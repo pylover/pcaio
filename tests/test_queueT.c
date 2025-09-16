@@ -28,9 +28,7 @@ typedef struct foo {
 
 /* local public */
 #undef T
-#define T foo_t
-#undef S
-#define S fooqueue
+#define T foo
 #include "pcaio/queueT.h"
 #include "pcaio/queueT.c"
 

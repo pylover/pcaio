@@ -27,7 +27,8 @@
 /* generic stuff (must included once) */
 #define QNAME_PASTE(x, y) x ## y
 #define QNAME_EVAL(x, y)  QNAME_PASTE(x, y)
-#define QNAME(n) QNAME_EVAL(S, n)
+#define QNAME(n) QNAME_EVAL(T, n)
+#define QTYPE() QNAME_EVAL(T, _t)
 
 
 /* flags */
@@ -38,29 +39,29 @@
 
 
 /* generic<template> definitions */
-struct QNAME() {
-    T *head;
-    T *tail;
+struct QNAME(queue) {
+    QTYPE() *head;
+    QTYPE() *tail;
     pthread_cond_t condition;
     pthread_mutex_t mutex;
 };
 
 
 void
-QNAME(_init) (struct QNAME() *q);
+QNAME(queue_init) (struct QNAME(queue) *q);
 
 
 void
-QNAME(_deinit) (struct QNAME() *q);
+QNAME(queue_deinit) (struct QNAME(queue) *q);
 
 
 int
-QNAME(_push) (struct QNAME() *q, T *v);
+QNAME(queue_push) (struct QNAME(queue) *q, QTYPE() *v);
 
 
 int
-QNAME(_pushall) (struct QNAME() *q, T *v[], size_t count);
+QNAME(queue_pushall) (struct QNAME(queue) *q, QTYPE() *v[], size_t count);
 
 
 int
-QNAME(_pop) (struct QNAME() *q, T **out, int flags);
+QNAME(queue_pop) (struct QNAME(queue) *q, QTYPE() **out, int flags);

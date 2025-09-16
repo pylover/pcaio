@@ -34,12 +34,10 @@
 #include "threadlocalT.c"
 
 /* local public */
-#undef T
-#define T task_t
-#undef S
-#define S taskqueue
-#include "pcaio/queueT.c"
 #include "pcaio/pcaio.h"
+#undef T
+#define T task
+#include "pcaio/queueT.c"
 
 
 static void
