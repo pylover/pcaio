@@ -37,6 +37,7 @@
 #include "pcaio/pcaio.h"
 #undef T
 #define T task
+#include "pcaio/listT.c"
 #include "pcaio/queueT.c"
 
 
@@ -113,7 +114,7 @@ task_new(pcaio_taskmain_t func, int argc, va_list args) {
             p & 0xffffffff);
 
     /* hollaaaa */
-    atomic_fetch_add(&state.tasks, 1);
+    tasklist_append(&state.tasks, t);
     return t;
 }
 
@@ -127,8 +128,9 @@ task_free(struct pcaio_task *t) {
     if (t->context.uc_stack.ss_sp) {
         free(t->context.uc_stack.ss_sp);
     }
+
+    tasklist_delete(&state.tasks, t);
     free(t);
-    atomic_fetch_sub(&state.tasks, 1);
 }
 
 

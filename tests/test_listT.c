@@ -39,7 +39,7 @@ test_listT() {
     struct foo first = {7, NULL, NULL};
     struct foo second = {8, NULL, NULL};
     struct foo third = {9, NULL, NULL};
-    struct foolist l;
+    struct foolist l = {NULL, NULL, 0};
 
     foolist_init(&l);
     isnull(l.head);

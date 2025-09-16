@@ -33,12 +33,17 @@ typedef struct pcaio_task task_t;
 #include "pcaio/pcaio.h"
 #undef T
 #define T task
+#include "pcaio/listT.h"
 #include "pcaio/queueT.h"
 
 
 struct pcaio_task {
     /* used by anyone to flag the task */
     int flags;
+
+    /* used by tasklist */
+    struct pcaio_task *tasklist_next;
+    struct pcaio_task *tasklist_prev;
 
     /* used by taskqueue */
     struct pcaio_task *taskqueue_next;

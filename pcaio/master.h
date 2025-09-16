@@ -35,7 +35,7 @@ struct master {
 
     /* atomic vars used for process exit condition */
     atomic_bool cancel;
-    atomic_uint tasks;
+    struct tasklist tasks;
 
     /* the famous taskqueue/threadpool couple */
     struct taskqueue taskq;

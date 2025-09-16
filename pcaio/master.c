@@ -41,7 +41,7 @@
 struct master state = {
     .workers = 0,
     .cancel = true,
-    .tasks = 0,
+    .tasks = {NULL, NULL, 0},
     .modulescount = 0,
 };
 
@@ -56,8 +56,10 @@ master_init(unsigned short workers) {
         return -1;
     }
 
+    tasklist_init(&state.tasks);
     taskqueue_init(&state.taskq);
     if (threadpool_init(&state.pool, workers, worker, &state.taskq)) {
+        tasklist_deinit(&state.tasks);
         taskqueue_deinit(&state.taskq);
         return -1;
     }
@@ -82,6 +84,7 @@ master_init(unsigned short workers) {
 
 failed:
     threadpool_deinit(&state.pool);
+    tasklist_deinit(&state.tasks);
     taskqueue_deinit(&state.taskq);
     return -1;
 }
@@ -95,6 +98,7 @@ master_deinit() {
     threadlocaltask_delete();
     threadlocalucontext_delete();
     threadpool_deinit(&state.pool);
+    tasklist_deinit(&state.tasks);
     taskqueue_deinit(&state.taskq);
 
     /* freeup installed modules */
@@ -133,7 +137,7 @@ master() {
     threadlocalucontext_set(NULL);
 
     /* main loop */
-    while ((!state.cancel) && (state.tasks)) {
+    while ((!state.cancel) && (state.tasks.count)) {
         /* modules tick */
         if (any) {
             toutus = CONFIG_PCAIO_MODULETIMEOUT_SHORT_US;

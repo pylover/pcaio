@@ -29,19 +29,12 @@
 void
 LNAME(list_init) (struct LNAME(list) *q) {
     pthread_mutex_init(&q->mutex, NULL);
-
-    q->head = NULL;
-    q->tail = NULL;
-    q->count = 0;
 }
 
 
 void
 LNAME(list_deinit) (struct LNAME(list) *q) {
     pthread_mutex_destroy(&q->mutex);
-    q->head = NULL;
-    q->tail = NULL;
-    q->count = 0;
 }
 
 
