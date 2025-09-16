@@ -56,9 +56,9 @@ master_init(unsigned short workers) {
         return -1;
     }
 
-    taskqueue_init(&state.taskq);
+    workertaskqueue_init(&state.taskq);
     if (threadpool_init(&state.pool, workers, worker, &state.taskq)) {
-        taskqueue_deinit(&state.taskq);
+        workertaskqueue_deinit(&state.taskq);
         return -1;
     }
 
@@ -82,7 +82,7 @@ master_init(unsigned short workers) {
 
 failed:
     threadpool_deinit(&state.pool);
-    taskqueue_deinit(&state.taskq);
+    workertaskqueue_deinit(&state.taskq);
     return -1;
 }
 
@@ -95,7 +95,7 @@ master_deinit() {
     threadlocaltask_delete();
     threadlocalucontext_delete();
     threadpool_deinit(&state.pool);
-    taskqueue_deinit(&state.taskq);
+    workertaskqueue_deinit(&state.taskq);
 
     /* freeup installed modules */
     for (i = 0; i < state.modulescount; i++) {
@@ -170,7 +170,7 @@ master() {
     }
 
     INFO("freeup remaining task(s)...");
-    while (taskqueue_pop(&state.taskq, &t, 0) == 0) {
+    while (workertaskqueue_pop(&state.taskq, &t, 0) == 0) {
         task_free(t);
     }
 

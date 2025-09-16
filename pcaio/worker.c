@@ -37,7 +37,7 @@
 
 
 static void
-_cleanup(struct taskqueue *q) {
+_cleanup(struct workertaskqueue *q) {
     struct pcaio_task *t;
 
     t = threadlocaltask_get();
@@ -53,7 +53,7 @@ _cleanup(struct taskqueue *q) {
 
 
 int
-worker(struct taskqueue *q) {
+worker(struct workertaskqueue *q) {
     int ret;
     int exitstatus = 0;
     ucontext_t landing;
@@ -66,7 +66,7 @@ worker(struct taskqueue *q) {
     pthread_cleanup_push((void(*)(void*))_cleanup, q);
 
     /* wait, pop, calculate and start over */
-    while (taskqueue_pop(q, &t, QWAIT) == 0) {
+    while (workertaskqueue_pop(q, &t, QWAIT) == 0) {
         /* update the task's thread local storage, master_currenttask*
          * functions needs it. */
         threadlocaltask_set(t);
@@ -99,7 +99,7 @@ worker(struct taskqueue *q) {
         }
 
         /* re-schedule the task */
-        if (taskqueue_push(q, t)) {
+        if (workertaskqueue_push(q, t)) {
             /*  panic */
             exitstatus = EINVAL;
             goto done;

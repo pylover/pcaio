@@ -47,7 +47,7 @@ QNAME(queue_deinit) (struct QNAME(queue) *q) {
 
 int
 QNAME(queue_push) (struct QNAME(queue) *q, QELTYP() *v) {
-    if (v->next || (v == q->tail)) {
+    if (v->M || (v == q->tail)) {
         return -1;
     }
 
@@ -57,11 +57,11 @@ QNAME(queue_push) (struct QNAME(queue) *q, QELTYP() *v) {
         q->tail = v;
     }
     else {
-        q->tail->next = v;
+        q->tail->M = v;
         q->tail = v;
     }
 
-    v->next = NULL;
+    v->M = NULL;
 
     pthread_cond_signal(&q->condition);
     pthread_mutex_unlock(&q->mutex);
@@ -79,7 +79,7 @@ QNAME(queue_pushall) (struct QNAME(queue) *q, QELTYP() *v[], size_t count) {
     }
 
     for (i = 0; i < count; i++) {
-        if (v[i]->next || (v[i] == q->tail)) {
+        if (v[i]->M || (v[i] == q->tail)) {
             return -1;
         }
     }
@@ -95,11 +95,11 @@ QNAME(queue_pushall) (struct QNAME(queue) *q, QELTYP() *v[], size_t count) {
 
     /* chain the rest */
     for (i = 1; i < count; i++) {
-        q->tail->next = v[i];
+        q->tail->M = v[i];
         q->tail = v[i];
     }
 
-    q->tail->next = NULL;
+    q->tail->M = NULL;
 
     pthread_cond_broadcast(&q->condition);
     pthread_mutex_unlock(&q->mutex);
@@ -127,13 +127,13 @@ QNAME(queue_pop) (struct QNAME(queue) *q, QELTYP() **out, int flags) {
     }
 
     o = q->head;
-    if (o->next == NULL) {
+    if (o->M == NULL) {
         q->head = NULL;
         q->tail = NULL;
     }
     else {
-        q->head = o->next;
-        o->next = NULL;
+        q->head = o->M;
+        o->M = NULL;
     }
 
     *out = o;

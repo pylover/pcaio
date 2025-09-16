@@ -40,7 +40,7 @@ typedef void *(*pthread_start_t)(void *);
 
 int
 threadpool_init(struct threadpool *tp, unsigned short maxworkers,
-        worker_t starter, struct taskqueue *q) {
+        worker_t starter, struct workertaskqueue *q) {
     int err;
     pthread_t *thrds;
 

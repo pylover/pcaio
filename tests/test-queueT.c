@@ -29,6 +29,8 @@ typedef struct foo {
 #undef T
 #define T foo
 #include "pcaio/queueT.h"
+#undef M
+#define M next
 #include "pcaio/queueT.c"
 
 

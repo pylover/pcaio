@@ -38,7 +38,7 @@ struct master {
     atomic_uint tasks;
 
     /* the famous taskqueue/threadpool couple */
-    struct taskqueue taskq;
+    struct workertaskqueue taskq;
     struct threadpool pool;
 
     /* vector of modules pointer*/
