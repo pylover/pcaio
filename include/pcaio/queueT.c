@@ -27,7 +27,7 @@
 
 
 void
-QNAME(queue_init) (struct QNAME(queue) *q) {
+QNAME(_init) (struct QNAME() *q) {
     pthread_mutex_init(&q->mutex, NULL);
     pthread_cond_init(&q->condition, NULL);
 
@@ -37,7 +37,7 @@ QNAME(queue_init) (struct QNAME(queue) *q) {
 
 
 void
-QNAME(queue_deinit) (struct QNAME(queue) *q) {
+QNAME(_deinit) (struct QNAME() *q) {
     pthread_mutex_destroy(&q->mutex);
     pthread_cond_destroy(&q->condition);
     q->head = NULL;
@@ -46,8 +46,8 @@ QNAME(queue_deinit) (struct QNAME(queue) *q) {
 
 
 int
-QNAME(queue_push) (struct QNAME(queue) *q, QELTYP() *v) {
-    if (v->M || (v == q->tail)) {
+QNAME(_push) (struct QNAME() *q, T *v) {
+    if (v->QNAME(_next) || (v == q->tail)) {
         return -1;
     }
 
@@ -57,11 +57,11 @@ QNAME(queue_push) (struct QNAME(queue) *q, QELTYP() *v) {
         q->tail = v;
     }
     else {
-        q->tail->M = v;
+        q->tail->QNAME(_next) = v;
         q->tail = v;
     }
 
-    v->M = NULL;
+    v->QNAME(_next) = NULL;
 
     pthread_cond_signal(&q->condition);
     pthread_mutex_unlock(&q->mutex);
@@ -70,7 +70,7 @@ QNAME(queue_push) (struct QNAME(queue) *q, QELTYP() *v) {
 
 
 int
-QNAME(queue_pushall) (struct QNAME(queue) *q, QELTYP() *v[], size_t count) {
+QNAME(_pushall) (struct QNAME() *q, T *v[], size_t count) {
     int i;
 
     /* some guards */
@@ -79,7 +79,7 @@ QNAME(queue_pushall) (struct QNAME(queue) *q, QELTYP() *v[], size_t count) {
     }
 
     for (i = 0; i < count; i++) {
-        if (v[i]->M || (v[i] == q->tail)) {
+        if (v[i]->QNAME(_next) || (v[i] == q->tail)) {
             return -1;
         }
     }
@@ -95,11 +95,11 @@ QNAME(queue_pushall) (struct QNAME(queue) *q, QELTYP() *v[], size_t count) {
 
     /* chain the rest */
     for (i = 1; i < count; i++) {
-        q->tail->M = v[i];
+        q->tail->QNAME(_next) = v[i];
         q->tail = v[i];
     }
 
-    q->tail->M = NULL;
+    q->tail->QNAME(_next) = NULL;
 
     pthread_cond_broadcast(&q->condition);
     pthread_mutex_unlock(&q->mutex);
@@ -108,9 +108,9 @@ QNAME(queue_pushall) (struct QNAME(queue) *q, QELTYP() *v[], size_t count) {
 
 
 int
-QNAME(queue_pop) (struct QNAME(queue) *q, QELTYP() **out, int flags) {
+QNAME(_pop) (struct QNAME() *q, T **out, int flags) {
     int ret = 0;
-    QELTYP() *o;
+    T *o;
 
     pthread_mutex_lock(&q->mutex);
     if (flags & QWAIT) {
@@ -127,13 +127,13 @@ QNAME(queue_pop) (struct QNAME(queue) *q, QELTYP() **out, int flags) {
     }
 
     o = q->head;
-    if (o->M == NULL) {
+    if (o->QNAME(_next) == NULL) {
         q->head = NULL;
         q->tail = NULL;
     }
     else {
-        q->head = o->M;
-        o->M = NULL;
+        q->head = o->QNAME(_next);
+        o->QNAME(_next) = NULL;
     }
 
     *out = o;

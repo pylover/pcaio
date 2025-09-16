@@ -22,15 +22,16 @@
 
 typedef struct foo {
     int val;
-    struct foo *next;
+    struct foo *fooqueue_next;
 } foo_t;
+
 
 /* local public */
 #undef T
-#define T foo
+#define T foo_t
+#undef S
+#define S fooqueue
 #include "pcaio/queueT.h"
-#undef M
-#define M next
 #include "pcaio/queueT.c"
 
 
@@ -51,7 +52,7 @@ test_queueT() {
     fooqueue_push(&q, &foo73);
     isnotnull(q.head);
     isnotnull(q.tail);
-    isnull(foo73.next);
+    isnull(foo73.fooqueue_next);
     eqptr(q.head, q.tail);
     eqptr(q.head, &foo73);
 
@@ -59,7 +60,7 @@ test_queueT() {
     eqint(73, out->val);
     isnull(q.head);
     isnull(q.tail);
-    isnull(out->next);
+    isnull(out->fooqueue_next);
 
     /* enqueue more than one item */
     fooqueue_push(&q, &foo73);
@@ -67,9 +68,9 @@ test_queueT() {
     fooqueue_push(&q, &foo75);
     eqptr(q.head, &foo73);
     eqptr(q.tail, &foo75);
-    eqptr(foo73.next, &foo74);
-    eqptr(foo74.next, &foo75);
-    isnull(foo75.next);
+    eqptr(foo73.fooqueue_next, &foo74);
+    eqptr(foo74.fooqueue_next, &foo75);
+    isnull(foo75.fooqueue_next);
 
     eqint(0, fooqueue_pop(&q, &out, 0));
     eqint(73, out->val);
@@ -80,7 +81,7 @@ test_queueT() {
 
     isnull(q.head);
     isnull(q.tail);
-    isnull(out->next);
+    isnull(out->fooqueue_next);
     /* freeup */
     fooqueue_deinit(&q);
 }

@@ -34,7 +34,7 @@
 
 struct threadpool {
     worker_t starter;
-    struct workertaskqueue *taskq;
+    struct taskqueue *taskq;
     atomic_ushort count;
     pthread_t *threads;
     pthread_mutex_t mutex;
@@ -43,7 +43,7 @@ struct threadpool {
 
 int
 threadpool_init(struct threadpool *tp, unsigned short maxworkers,
-        worker_t starter, struct workertaskqueue *q);
+        worker_t starter, struct taskqueue *q);
 
 
 int

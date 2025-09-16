@@ -30,9 +30,10 @@ typedef struct pcaio_task task_t;
 #include "threadlocalT.h"
 
 /* local public */
-typedef struct pcaio_task workertask_t;
 #undef T
-#define T workertask
+#define T task_t
+#undef S
+#define S taskqueue
 #include "pcaio/queueT.h"
 #include "pcaio/pcaio.h"
 
@@ -42,7 +43,7 @@ struct pcaio_task {
     int flags;
 
     /* used by taskqueue */
-    struct pcaio_task *workertaskqueue_next;
+    struct pcaio_task *taskqueue_next;
 
     /* used by worker */
     struct ucontext_t context;

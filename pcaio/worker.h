@@ -24,11 +24,11 @@
 #include "task.h"
 
 
-typedef int (*worker_t) (struct workertaskqueue *q);
+typedef int (*worker_t) (struct taskqueue *q);
 
 
 int
-worker(struct workertaskqueue *q);
+worker(struct taskqueue *q);
 
 
 #endif  // PCAIO_WORKER_H_

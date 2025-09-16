@@ -52,7 +52,7 @@ pcaio_schedule(struct pcaio_task *t) {
         return -1;
     }
 
-    return workertaskqueue_push(&state.taskq, t);
+    return taskqueue_push(&state.taskq, t);
 }
 
 
@@ -70,7 +70,7 @@ pcaio_fschedule(pcaio_taskmain_t func, int argc, ...) {
         return -1;
     }
 
-    return workertaskqueue_push(&state.taskq, t);
+    return taskqueue_push(&state.taskq, t);
 }
 
 
@@ -197,8 +197,8 @@ pcaio(unsigned short workers, struct pcaio_task *tasks[],
         return -1;
     }
 
-    if (workertaskqueue_pushall(&state.taskq, tasks, count)) {
-        ERROR("workertaskqueue_pushall");
+    if (taskqueue_pushall(&state.taskq, tasks, count)) {
+        ERROR("taskqueue_pushall");
         return -1;
     }
 

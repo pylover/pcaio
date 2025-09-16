@@ -35,9 +35,9 @@
 
 /* local public */
 #undef T
-#define T workertask
-#undef M
-#define M workertaskqueue_next
+#define T task_t
+#undef S
+#define S taskqueue
 #include "pcaio/queueT.c"
 #include "pcaio/pcaio.h"
 
