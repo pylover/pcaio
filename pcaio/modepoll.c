@@ -101,19 +101,21 @@ _tick(unsigned int timeout_us) {
     if (nfds == -1) {
         ERROR("epoll_wait() -> nfds: %d", nfds);
         ret = PMSPANIC;
-        // TODO: reject all tasks
-        // goto done;
+        while (pcaio_ioeventlist_pop(&_mod->waitingevents, &e) == 0) {
+            /* aka EPOLLERR */
+            e->events |= IOERR;
+            pcaio_schedule(e->task);
+        }
+        goto done;
     }
 
     for (i = 0; i < nfds; i++) {
         e = (struct pcaio_ioevent*)_mod->events[i].data.ptr;
         e->events = _mod->events[i].events;
-        if (nfds == -1) {
-            /* aka EPOLLERR */
-            e->events |= IOERR;
-        }
 
-        pcaio_ioeventlist_delete(&_mod->waitingevents, e);
+        if (pcaio_ioeventlist_delete(&_mod->waitingevents, e)) {
+            return -1;
+        }
         pcaio_schedule(e->task);
     }
 
