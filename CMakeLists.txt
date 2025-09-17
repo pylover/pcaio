@@ -68,6 +68,8 @@ install(FILES
   include/pcaio/queueT.c 
   include/pcaio/ringT.h 
   include/pcaio/ringT.c 
+  include/pcaio/listT.h 
+  include/pcaio/listT.c 
   DESTINATION "include/pcaio"
 )
 
