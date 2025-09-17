@@ -22,3 +22,9 @@
 - pthreads(7)
 - select(2)
 - epoll(7)
+
+
+
+task_append
+task_delete
+task_pop

@@ -30,14 +30,20 @@
 #include "pcaio/pcaio.h"
 
 
+struct pcaio_ioevent;
 typedef struct pcaio_ioevent {
     int fd;
     int events;
     struct pcaio_task *task;
+
+    /* ioevent list */
+    struct pcaio_ioevent *pcaio_ioeventlist_next;
+    struct pcaio_ioevent *pcaio_ioeventlist_prev;
 } pcaio_ioevent_t;
 #undef T
 #define T pcaio_ioevent
 #include "pcaio/ringT.h"
+#include "pcaio/listT.h"
 
 
 struct pcaio_iomodule {

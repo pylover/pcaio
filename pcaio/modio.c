@@ -29,6 +29,7 @@
 #undef T
 #define T pcaio_ioevent
 #include "pcaio/ringT.c"
+#include "pcaio/listT.c"
 
 
 struct modio {

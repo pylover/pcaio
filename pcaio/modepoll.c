@@ -20,6 +20,7 @@
 
 /* standard */
 #include <stdatomic.h>
+#include <string.h>
 #include <signal.h>
 
 /* system */
@@ -38,11 +39,9 @@ struct modepoll {
 
     int fd;
     unsigned short maxevents;
-    atomic_ushort waitingfiles;
+    struct pcaio_ioeventlist waitingevents;
     struct epoll_event events[];
 };
-
-
 static struct modepoll *_mod = NULL;
 
 
@@ -55,7 +54,8 @@ _init() {
         return -1;
     }
 
-    _mod->waitingfiles = 0;
+    memset(&_mod->waitingevents, 0, sizeof(_mod->waitingevents));
+    pcaio_ioeventlist_init(&_mod->waitingevents);
     _mod->fd = fd;
     return 0;
 }
@@ -82,7 +82,7 @@ _tick(unsigned int timeout_us) {
     struct pcaio_ioevent *e;
     // sigset_t sigmask;
 
-    if (_mod->waitingfiles == 0) {
+    if (_mod->waitingevents.count == 0) {
         return PMSIDLE;
     }
 
@@ -92,7 +92,7 @@ _tick(unsigned int timeout_us) {
     // sigaddset(&sigmask, SIGINT);
 
     errno = 0;
-    nfds = epoll_wait(_mod->fd, _mod->events, _mod->waitingfiles,
+    nfds = epoll_wait(_mod->fd, _mod->events, _mod->waitingevents.count,
             timeout_us / 1000);
     if (nfds == 0) {
         goto done;
@@ -101,6 +101,8 @@ _tick(unsigned int timeout_us) {
     if (nfds == -1) {
         ERROR("epoll_wait() -> nfds: %d", nfds);
         ret = PMSPANIC;
+        // TODO: reject all tasks
+        // goto done;
     }
 
     for (i = 0; i < nfds; i++) {
@@ -111,7 +113,7 @@ _tick(unsigned int timeout_us) {
             e->events |= IOERR;
         }
 
-        atomic_fetch_sub(&_mod->waitingfiles, 1);
+        pcaio_ioeventlist_delete(&_mod->waitingevents, e);
         pcaio_schedule(e->task);
     }
 
@@ -135,6 +137,7 @@ pcaio_modepoll_await(int fd, int events) {
         return -1;
     }
 
+    memset(&e, 0, sizeof(e));
     e.events = events;
     e.task = t;
     e.fd = fd;
@@ -148,8 +151,14 @@ pcaio_modepoll_await(int fd, int events) {
         errno = 0;
     }
 
-    atomic_fetch_add(&_mod->waitingfiles, 1);
+    if (pcaio_ioeventlist_append(&_mod->waitingevents, &e)) {
+        epoll_ctl(_mod->fd, EPOLL_CTL_DEL, fd, &ee);
+        return -1;
+    }
+
     if (pcaio_feed(TASK_NOSCHEDULE)) {
+        epoll_ctl(_mod->fd, EPOLL_CTL_DEL, fd, &ee);
+        pcaio_ioeventlist_delete(&_mod->waitingevents, &e);
         return -1;
     }
 
