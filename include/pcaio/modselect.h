@@ -25,7 +25,7 @@ pcaio_modselect_use(unsigned short maxfileno, struct pcaio_iomodule **out);
 
 
 int
-pcaio_modselect_await(int fd, int events);
+pcaio_modselect_monitorA(int fd, int events);
 
 
 #endif  // INCLUDE_PCAIO_MODSELECT_H_

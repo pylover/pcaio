@@ -36,9 +36,9 @@ _subtask(int argc, void *argv[]) {
     struct pcaio_task *t = pcaio_self();
 
     INFO("subtask: %d started",  t);
-    FEED(0);
+    pcaio_relaxA(0);
     INFO("subtask: %d waked up",  t);
-    FEED(0);
+    pcaio_relaxA(0);
     INFO("subtask: %d done",  t);
     return 0;
 }
@@ -48,9 +48,9 @@ _taskmain(int argc, void *argv[]) {
     struct pcaio_task *t = pcaio_self();
 
     INFO("task: %d started",  t);
-    FEED(0);
+    pcaio_relaxA(0);
     INFO("task: %d waked up",  t);
-    FEED(0);
+    pcaio_relaxA(0);
     INFO("task: %d done",  t);
     pcaio_fschedule(_subtask, 0);
     return 0;

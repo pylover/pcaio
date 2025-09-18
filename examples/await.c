@@ -32,25 +32,25 @@
 
 
 static int
-_subtask() {
+_subtaskA() {
     INFO("subtask: started");
-    FEED(0);
+    pcaio_relaxA(0);
     INFO("subtask: waked up");
-    FEED(0);
+    pcaio_relaxA(0);
     INFO("subtask: done");
     return 73;
 }
 
 static int
-_task(int argc, void *argv[]) {
+_taskA(int argc, void *argv[]) {
     int v;
 
     INFO("task: started");
-    FEED(0);
-    v = _subtask();
+    pcaio_relaxA(0);
+    v = _subtaskA();
     INFO("task: subtask res: %d", v);
     INFO("task: waked up");
-    FEED(0);
+    pcaio_relaxA(0);
     INFO("task: done");
     return 0;
 }
@@ -62,7 +62,7 @@ main() {
     struct pcaio_task *tasks[TASKS_MAX];
 
     for (i = 0; i < TASKS_MAX; i++) {
-        tasks[i] = pcaio_task_new(_task, 0);
+        tasks[i] = pcaio_task_new(_taskA, 0);
     }
     pcaio(WORKERS, tasks, TASKS_MAX);
     INFO("%ld tasks has been completed successfully", TASKS_MAX);

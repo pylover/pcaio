@@ -43,7 +43,7 @@ _echo(int argc, void *argv[]) {
 
     printf("write something then press enter.\n");
     for (;;) {
-        ret = await_read(STDIN_FILENO, buff, CHUNKSIZE);
+        ret = readA(STDIN_FILENO, buff, CHUNKSIZE);
         if (ret <= 0) {
             break;
         }

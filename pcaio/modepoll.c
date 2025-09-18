@@ -125,7 +125,7 @@ done:
 
 
 int
-pcaio_modepoll_await(int fd, int events) {
+pcaio_modepoll_monitorA(int fd, int events) {
     struct pcaio_ioevent e;
     struct epoll_event ee;
     struct pcaio_task *t;
@@ -158,7 +158,7 @@ pcaio_modepoll_await(int fd, int events) {
         return -1;
     }
 
-    if (pcaio_feed(TASK_NOSCHEDULE)) {
+    if (pcaio_relaxA(TASK_NOSCHEDULE)) {
         epoll_ctl(_mod->fd, EPOLL_CTL_DEL, fd, &ee);
         pcaio_ioeventlist_delete(&_mod->waitingevents, &e);
         return -1;
@@ -192,7 +192,7 @@ pcaio_modepoll_use(unsigned short maxevents, struct pcaio_iomodule **out) {
     m->init = _init;
     m->dtor = _dtor;
     m->tick = _tick;
-    m->await = pcaio_modepoll_await;
+    m->await = pcaio_modepoll_monitorA;
     m->maxevents = maxevents;
 
     if (pcaio_module_install((struct pcaio_module *)m)) {

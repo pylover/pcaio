@@ -92,10 +92,10 @@ pcaio_modio_use(struct pcaio_iomodule *defmod) {
 
 
 ssize_t
-await_read(int fd, void *buf, size_t count) {
+readA(int fd, void *buf, size_t count) {
     ssize_t bytes;
 
-    FEED(0);
+    pcaio_relaxA(0);
 
 retry:
     bytes = read(fd, buf, count);
@@ -117,10 +117,10 @@ retry:
 
 
 ssize_t
-await_write(int fd, void *buf, size_t count) {
+writeA(int fd, void *buf, size_t count) {
     ssize_t bytes;
 
-    FEED(0);
+    pcaio_relaxA(0);
 
 retry:
     bytes = write(fd, buf, count);
@@ -142,11 +142,11 @@ retry:
 
 
 int
-await_accept(int sockfd, struct sockaddr *restrict addr,
+acceptA(int sockfd, struct sockaddr *restrict addr,
         socklen_t *restrict addrlen) {
     int fd;
 
-    FEED(0);
+    pcaio_relaxA(0);
 
 retry:
     fd = accept(sockfd, addr, addrlen);
@@ -170,11 +170,11 @@ retry:
 #ifdef _GNU_SOURCE
 
 int
-await_accept4(int sockfd, struct sockaddr *restrict addr,
+accept4A(int sockfd, struct sockaddr *restrict addr,
         socklen_t *restrict addrlen, int flags) {
     int fd;
 
-    FEED(0);
+    pcaio_relaxA(0);
 
 retry:
     fd = accept4(sockfd, addr, addrlen, flags);

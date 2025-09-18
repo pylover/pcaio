@@ -68,21 +68,21 @@ pcaio_modio_await(int fd, int events);
 
 
 ssize_t
-await_read(int fd, void *buf, size_t count);
+readA(int fd, void *buf, size_t count);
 
 
 ssize_t
-await_write(int fd, void *buf, size_t count);
+writeA(int fd, void *buf, size_t count);
 
 
 int
-await_accept(int sockfd, struct sockaddr *restrict addr,
+acceptA(int sockfd, struct sockaddr *restrict addr,
         socklen_t *restrict addrlen);
 
 
 #ifdef _GNU_SOURCE
 int
-await_accept4(int sockfd, struct sockaddr *restrict addr,
+accept4A(int sockfd, struct sockaddr *restrict addr,
         socklen_t *restrict addrlen, int flags);
 #endif  // _GNU_SOURCE
 

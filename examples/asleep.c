@@ -35,7 +35,7 @@
 
 
 static int
-_task(int argc, void *argv[]) {
+_taskA(int argc, void *argv[]) {
     int i;
     long id = (long)argv[0];
     struct pcaio_timer *timer;
@@ -44,11 +44,11 @@ _task(int argc, void *argv[]) {
      * pcaio_modio_use */
     timer = pcaio_timer_new(NULL);
     INFO("task %d started", id);
-    FEED(0);
+    pcaio_relaxA(0);
     for (i = 0; i < 5; i++) {
         /* async sleep for 500 miliseconds */
         INFO("task %d #%d sleep", id, i);
-        if (pcaio_asleep_ms(timer, 50 + i * 100)) {
+        if (sleepA_ms(timer, 50 + i * 100)) {
             ERROR("pcaio_asleep_ms");
             break;
         }
@@ -71,7 +71,7 @@ main() {
     pcaio_modio_use(modepoll);
 
     for (i = 0; i < TASKS_MAX; i++) {
-        tasks[i] = pcaio_task_new(_task, 1, i);
+        tasks[i] = pcaio_task_new(_taskA, 1, i);
     }
     pcaio(WORKERS, tasks, TASKS_MAX);
     INFO("%ld tasks has been completed successfully", TASKS_MAX);

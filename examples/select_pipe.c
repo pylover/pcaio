@@ -51,7 +51,7 @@ _producer(int argc, int argv[]) {
     }
 
     for (i = 0; i < 16; i++) {
-        ret = await_read(rfd, buff, CHUNKSIZE);
+        ret = readA(rfd, buff, CHUNKSIZE);
         if (ret <= 0) {
             break;
         }
@@ -61,7 +61,7 @@ _producer(int argc, int argv[]) {
             buff[j] = (buff[j] % 26) + (buff[j] & 0x80? 97: 65);
         }
 
-        ret = await_write(fd, buff, ret);
+        ret = writeA(fd, buff, ret);
         if (ret <= 0) {
             break;
         }
@@ -80,7 +80,7 @@ _consumer(int argc, int argv[]) {
     char buff[CHUNKSIZE];
 
     for (;;) {
-        ret = await_read(fd, buff, CHUNKSIZE);
+        ret = readA(fd, buff, CHUNKSIZE);
         if (ret <= 0) {
             break;
         }

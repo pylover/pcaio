@@ -33,11 +33,11 @@ _worker(int argc, char *argv[]) {
     int i = strlen(argv[0]);
 
     logs[hits++] = i;
-    FEED(0);
+    pcaio_relaxA(0);
 
     i *= 3;
     logs[hits++] = i;
-    FEED(0);
+    pcaio_relaxA(0);
 
     i += 7;
     logs[hits++] = i;

@@ -167,7 +167,7 @@ _tick(unsigned int timeout_us) {
 
 
 int
-pcaio_modselect_await(int fd, int events) {
+pcaio_modselect_monitorA(int fd, int events) {
     struct pcaio_ioevent e;
     struct pcaio_task *t;
 
@@ -188,7 +188,7 @@ pcaio_modselect_await(int fd, int events) {
         return -1;
     }
 
-    if (pcaio_feed(TASK_NOSCHEDULE)) {
+    if (pcaio_relaxA(TASK_NOSCHEDULE)) {
         return -1;
     }
 
@@ -236,7 +236,7 @@ pcaio_modselect_use(unsigned short maxfileno, struct pcaio_iomodule **out) {
     m->init = NULL;
     m->dtor = _dtor;
     m->tick = _tick;
-    m->await = pcaio_modselect_await;
+    m->await = pcaio_modselect_monitorA;
     m->maxfileno = maxfileno;
 
     if (pcaio_module_install((struct pcaio_module *)m)) {

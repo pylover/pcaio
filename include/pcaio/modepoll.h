@@ -25,7 +25,7 @@ pcaio_modepoll_use(unsigned short maxevents, struct pcaio_iomodule **out);
 
 
 int
-pcaio_modepoll_wait(int fd, int events);
+pcaio_modepoll_monitorA(int fd, int events);
 
 
 #endif  // INCLUDE_PCAIO_MODEPOLL_H_

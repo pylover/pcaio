@@ -39,7 +39,7 @@ pcaio_timer_free(struct pcaio_timer *t);
 
 
 int
-pcaio_asleep_ms(struct pcaio_timer *t, time_t ms);
+sleepA_ms(struct pcaio_timer *t, time_t ms);
 
 
 #endif  // INCLUDE_PCAIO_TIMER_H_

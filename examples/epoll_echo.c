@@ -37,13 +37,13 @@
 
 
 static int
-_echo(int argc, void *argv[]) {
+_echoA(int argc, void *argv[]) {
     int ret = 0;
     char buff[CHUNKSIZE];
 
     printf("write something then press enter.\n");
     for (;;) {
-        ret = await_read(STDIN_FILENO, buff, CHUNKSIZE);
+        ret = readA(STDIN_FILENO, buff, CHUNKSIZE);
         if (ret <= 0) {
             break;
         }
@@ -65,7 +65,7 @@ main() {
     fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL) | O_NONBLOCK);
 
     /* create a task */
-    t = pcaio_task_new(_echo, 0);
+    t = pcaio_task_new(_echoA, 0);
 
     DEBUG("task: %p", t);
     /* create and register the epoll module */

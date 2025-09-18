@@ -120,7 +120,7 @@ pcaio_self() {
 /** this function will be called from worker threads.
  */
 int
-pcaio_feed(int flags) {
+pcaio_relaxA(int flags) {
     ucontext_t *ctx;
     struct pcaio_task *t;
 
