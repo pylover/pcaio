@@ -87,4 +87,10 @@ accept4A(int sockfd, struct sockaddr *restrict addr,
 #endif  // _GNU_SOURCE
 
 
+#ifdef _DEFAULT_SOURCE
+ssize_t
+writevA(int fd, const struct iovec *iov, int iovcnt);
+#endif  // _DEFAULT_SOURCE
+
+
 #endif  // INCLUDE_PCAIO_MODIO_H_

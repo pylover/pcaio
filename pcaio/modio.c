@@ -20,6 +20,7 @@
 
 /* system */
 #include <sys/socket.h>
+#include <sys/uio.h>
 
 /* thirdparty */
 #include <clog.h>
@@ -195,3 +196,33 @@ retry:
 }
 
 #endif  // _GNU_SOURCE
+
+
+#ifdef _DEFAULT_SOURCE
+
+ssize_t
+writevA(int fd, const struct iovec *iov, int iovcnt) {
+    ssize_t bytes;
+
+    pcaio_relaxA(0);
+
+retry:
+    bytes = writev(fd, iov, iovcnt);
+    if (bytes == -1) {
+        if (!RETRY(errno)) {
+            return -1;
+        }
+
+        if (pcaio_modio_await(fd, IOOUT)) {
+            return -1;
+        }
+
+        goto retry;
+    }
+
+    errno = 0;
+    return bytes;
+}
+
+
+#endif  // _DEFAULT_SOURCE
