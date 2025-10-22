@@ -113,17 +113,6 @@ set(CPACK_GENERATOR DEB)
 include(CPack)
 
 
-# Valgrind, Profiling
-set(VALGRIND_FLAGS
-    -s
-    --tool=memcheck 
-    --leak-check=yes 
-    --show-reachable=yes 
-    --num-callers=20 
-    --track-fds=yes 
-)
-
-
 # Testing
 option(PCAIO_BUILD_TESTS "Build tests/*.c" ON)
 if (PCAIO_BUILD_TESTS)
