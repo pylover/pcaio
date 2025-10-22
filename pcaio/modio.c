@@ -71,6 +71,11 @@ pcaio_modio_use(struct pcaio_iomodule *defmod) {
         return -1;
     }
 
+    if (_mod) {
+        /* already installed */
+        return -1;
+    }
+
     _mod = malloc(sizeof(struct modio));
     if (_mod == NULL) {
         return -1;

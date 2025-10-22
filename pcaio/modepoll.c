@@ -177,6 +177,11 @@ pcaio_modepoll_use(unsigned short maxevents, struct pcaio_iomodule **out) {
     size_t sz;
     struct modepoll *m;
 
+    if (_mod) {
+        /* already installed */
+        return -1;
+    }
+
     if (!maxevents) {
         return -1;
     }

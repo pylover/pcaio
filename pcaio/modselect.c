@@ -207,6 +207,11 @@ pcaio_modselect_use(unsigned short maxfileno, struct pcaio_iomodule **out) {
     struct rlimit limits;
     struct modselect *m;
 
+    if (_mod) {
+        /* already installed */
+        return -1;
+    }
+
     if (maxfileno > MAXFILENO) {
         return -1;
     }
