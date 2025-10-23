@@ -38,14 +38,6 @@
 
 static void
 _cleanup(struct taskqueue *q) {
-    struct pcaio_task *t;
-
-    t = threadlocaltask_get();
-    if (t) {
-        task_free(t);
-        threadlocaltask_set(NULL);
-    }
-
     pthread_mutex_unlock(&q->mutex);
     threadlocaltask_delete();
     threadlocalucontext_delete();
