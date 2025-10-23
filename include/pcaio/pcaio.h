@@ -55,11 +55,11 @@ struct pcaio_module {
 
 /* this structure must be provided by the user */
 int
-pcaio_fschedule(pcaio_taskmain_t func, int argc, ...);
+pcaio_fschedule(pcaio_taskmain_t func, int *status, int argc, ...);
 
 
 struct pcaio_task *
-pcaio_task_new(pcaio_taskmain_t func, int argc, ...);
+pcaio_task_new(pcaio_taskmain_t func, int *status, int argc, ...);
 
 
 int

@@ -51,8 +51,10 @@ struct pcaio_task {
     /* used by worker */
     struct ucontext_t context;
 
+    /* set by the taskmain_t wrapper after the taskmain_t returns */
+    int *status;
+
     /* provided by the user */
-    int exitstatus;
     pcaio_taskmain_t func;
     int argc;
     void *argv[];
@@ -60,7 +62,7 @@ struct pcaio_task {
 
 
 struct pcaio_task *
-task_new(pcaio_taskmain_t func, int argc, va_list args);
+task_new(pcaio_taskmain_t func, int *status, int argc, va_list args);
 
 
 void

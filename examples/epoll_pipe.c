@@ -107,8 +107,8 @@ main() {
     }
 
     /* create a task */
-    t[0] = pcaio_task_new((pcaio_taskmain_t)_consumer, 1, q[0]);
-    t[1] = pcaio_task_new((pcaio_taskmain_t)_producer, 1, q[1]);
+    t[0] = pcaio_task_new((pcaio_taskmain_t)_consumer, NULL, 1, q[0]);
+    t[1] = pcaio_task_new((pcaio_taskmain_t)_producer, NULL, 1, q[1]);
 
     /* register the epoll module */
     pcaio_modepoll_use(4, &modepoll);

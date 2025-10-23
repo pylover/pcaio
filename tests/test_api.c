@@ -29,8 +29,9 @@ int logs[6];
 
 
 static int
-_worker(int argc, char *argv[]) {
-    int i = strlen(argv[0]);
+_worker(int argc, void *argv[]) {
+    int l = strlen((char *)argv[0]);
+    int i = l;
 
     logs[hits++] = i;
     pcaio_relaxA(0);
@@ -41,16 +42,18 @@ _worker(int argc, char *argv[]) {
 
     i += 7;
     logs[hits++] = i;
-    return 0;
+    return l;
 }
 
 
 void
 test_api() {
     struct pcaio_task *tasks[2];
+    int foostatus;
+    int thudstatus;
 
-    tasks[0] = pcaio_task_new((pcaio_taskmain_t)_worker, 1, "foo");
-    tasks[1] = pcaio_task_new((pcaio_taskmain_t)_worker, 1, "thud");
+    tasks[0] = pcaio_task_new(_worker, &foostatus, 1, "foo");
+    tasks[1] = pcaio_task_new(_worker, &thudstatus, 1, "thud");
 
     hits = 0;
     memset(logs, 0, sizeof(int) * 6);
@@ -62,6 +65,9 @@ test_api() {
     eqint(12, logs[3]);
     eqint(16, logs[4]);
     eqint(19, logs[5]);
+
+    eqint(3, foostatus);
+    eqint(4, thudstatus);
 }
 
 

@@ -46,7 +46,7 @@ _taskmain(unsigned int p1, unsigned int p2);
 
 
 struct pcaio_task *
-task_new(pcaio_taskmain_t func, int argc, va_list args) {
+task_new(pcaio_taskmain_t func, int *status, int argc, va_list args) {
     struct pcaio_task *t;
     void *stack;
     size_t allocsize;
@@ -69,8 +69,9 @@ task_new(pcaio_taskmain_t func, int argc, va_list args) {
     memset(t, 0, allocsize);
     t->flags = 0;
 
-    /* store entry point */
+    /* store entry point and status pointer */
     t->func = func;
+    t->status = status;
 
     /* copy the args */
     t->argc = argc;
@@ -98,7 +99,8 @@ task_new(pcaio_taskmain_t func, int argc, va_list args) {
     t->context.uc_link = NULL;
 
     /* create the actual ucontext */
-    /* On architectures where int and pointer types are the same size
+    /* from makecontext(3)
+     * On architectures where int and pointer types are the same size
      * (e.g., x86-32, where both types are 32 bits), you may be able to get
      * away with passing pointers as arguments to makecontext() following
      * argc. However, doing this is not guaranteed to be portable, is
@@ -142,17 +144,22 @@ _taskmain(unsigned int p1, unsigned int p2) {
 
     /* ressemble the task pointer */
     t = (struct pcaio_task *)(((long)p1) << 32 | p2);
+
+    /* memory barrier to ensure the write on the t performed before doing
+     * anything else */
     asm volatile("" ::: "memory");
 
     /* execute the task's main function (aka start the task!) */
     exitstatus = t->func(t->argc, t->argv);
-    if (exitstatus) {
-        ERROR("task %p exited with status: %d", t, exitstatus);
-    }
 
-    /* tell the worker the task is completed and there is nothing to schedule
-     * anymore. */
+    /* tell the worker the task is completed and there is nothing to
+     * re-schedule anymore. */
     t->flags |= TASK_TERMINATED;
+
+    /* update the task status pointer if set already by the user */
+    if (t->status) {
+        *t->status = exitstatus;
+    }
 
     /* land */
     landing = threadlocalucontext_get();
