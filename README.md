@@ -44,3 +44,8 @@ retry:
 ```
 
 Check out the examples directory to figure out the API and how it works.
+
+## Projects using pcaio
+- [chttpd](https://github.com/chttpd/chttpd): POSIX compatible simple and Fast 
+    application embedded HTTP server using the 
+    [pcaio](https://github.com/pylover/pcaio).
