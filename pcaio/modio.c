@@ -114,10 +114,10 @@ retry:
             return -1;
         }
 
+        errno = 0;
         goto retry;
     }
 
-    errno = 0;
     return bytes;
 }
 
@@ -139,10 +139,10 @@ retry:
             return -1;
         }
 
+        errno = 0;
         goto retry;
     }
 
-    errno = 0;
     return bytes;
 }
 
@@ -165,10 +165,10 @@ retry:
             return -1;
         }
 
+        errno = 0;
         goto retry;
     }
 
-    errno = 0;
     return fd;
 }
 
@@ -193,10 +193,10 @@ retry:
             return -1;
         }
 
+        errno = 0;
         goto retry;
     }
 
-    errno = 0;
     return fd;
 }
 
@@ -222,10 +222,10 @@ retry:
             return -1;
         }
 
+        errno = 0;
         goto retry;
     }
 
-    errno = 0;
     return bytes;
 }
 
