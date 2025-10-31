@@ -21,6 +21,7 @@
 /* standard */
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <unistd.h>
 #include <errno.h>
 
@@ -109,7 +110,7 @@ master_deinit() {
         }
     }
 
-    state.workers = 0;
+    memset(&state, 0, sizeof(state));
     state.cancel = true;
     return 0;
 }
