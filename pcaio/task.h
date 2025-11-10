@@ -21,6 +21,7 @@
 
 
 /* standard */
+#include <stdarg.h>
 #include <ucontext.h>
 
 /* local private */
@@ -37,6 +38,7 @@ typedef struct pcaio_task task_t;
 #include "pcaio/queueT.h"
 
 
+struct gather;
 struct pcaio_task {
     /* used by anyone to flag the task */
     int flags;
@@ -51,11 +53,18 @@ struct pcaio_task {
     /* used by worker */
     struct ucontext_t context;
 
+    /* used by gather module */
+    struct gather *gather;
+
+    /* internal termination callback */
+    void (*terminated)(struct pcaio_task *);
+
     /* set by the taskmain_t wrapper after the taskmain_t returns */
     int *status;
 
     /* provided by the user */
     pcaio_taskmain_t func;
+    pcaio_taskdone_t onterminate;
     int argc;
     void *argv[];
 };

@@ -16,62 +16,54 @@
  *
  *  Author: Vahid Mardani <vahid.mardani@gmail.com>
  */
+/* standard */
 /* thirdparty */
 #include <cutest.h>
-#include <clog.h>
 
 /* local public */
 #include "pcaio/pcaio.h"
 
 
-int hits = 0;
-int logs[6];
-
-
 static int
-_workerA(int argc, void *argv[]) {
-    int l = strlen((char *)argv[0]);
-    int i = l;
+_subtaskA(int argc, void *argv[]) {
+    unsigned int seed = (unsigned long) argv[0];
 
-    logs[hits++] = i;
     pcaio_relaxA(0);
-
-    i *= 3;
-    logs[hits++] = i;
-    pcaio_relaxA(0);
-
-    i += 7;
-    logs[hits++] = i;
-    return l;
+    return seed * seed;
 }
 
 
-void
-test_api() {
-    struct pcaio_task *tasks[2];
-    int foostatus;
-    int thudstatus;
+static int
+_taskA(int argc, void *argv[]) {
+    int i;
+    struct pcaio_task *tasks[3];
+    int statuses[3];
+    int sum = 0;
 
-    tasks[0] = pcaio_task_new(_workerA, &foostatus, 1, "foo");
-    tasks[1] = pcaio_task_new(_workerA, &thudstatus, 1, "thud");
+    for (i = 0; i < 3; i++) {
+        tasks[i] = pcaio_task_new(_subtaskA, statuses + i, 1, i + 1);
+    }
+    pcaio_gatherA(tasks, 3);
+    for (i = 0; i < 3; i++) {
+        sum += statuses[i];
+    }
 
-    hits = 0;
-    memset(logs, 0, sizeof(int) * 6);
-    eqint(0, pcaio(1, tasks, 2));
-    eqint(6, hits);
-    eqint(3, logs[0]);
-    eqint(4, logs[1]);
-    eqint(9, logs[2]);
-    eqint(12, logs[3]);
-    eqint(16, logs[4]);
-    eqint(19, logs[5]);
+    eqint(14, sum);
+    return 0;
+}
 
-    eqint(3, foostatus);
-    eqint(4, thudstatus);
+
+static void
+test_gather() {
+    struct pcaio_task *task;
+
+    task = pcaio_task_new(_taskA, NULL, 0);
+    eqint(0, pcaio(1, &task, 1));
 }
 
 
 int
 main() {
-    test_api();
+    test_gather();
+    return EXIT_SUCCESS;
 }

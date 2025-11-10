@@ -18,6 +18,7 @@ add_library(threadpool OBJECT threadpool.c threadpool.h)
 add_library(context OBJECT context.c context.h)
 add_library(worker OBJECT worker.c worker.h)
 add_library(task OBJECT task.c task.h)
+add_library(gather OBJECT gather.c gather.h)
 add_library(master OBJECT master.c master.h)
 add_library(pcaio_ OBJECT pcaio.c ../include/pcaio/pcaio.h)
 

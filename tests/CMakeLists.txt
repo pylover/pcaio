@@ -5,6 +5,7 @@ list(APPEND testrules
   queueT
   ringT
   listT
+  gather
 )
 
 

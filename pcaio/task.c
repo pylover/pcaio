@@ -108,9 +108,8 @@ task_new(pcaio_taskmain_t func, int *status, int argc, va_list args) {
      * where pointers are larger than ints. Nevertheless, starting with
      * glibc 2.8, glibc makes some changes to makecontext(), to permit this on
      * some 64-bit architectures (e.g., x86-64).
-     * */
-
-    /* so, split the task pointer into two unsigned integers */
+     *
+     * so, split the task pointer into two unsigned integers */
     p = (long) t;
     makecontext(&t->context, (void (*)(void))_taskmain, 2, p >> 32,
             p & 0xffffffff);
@@ -159,6 +158,16 @@ _taskmain(unsigned int p1, unsigned int p2) {
     /* update the task status pointer if set already by the user */
     if (t->status) {
         *t->status = exitstatus;
+    }
+
+    /* execute the internal task termination hook */
+    if (t->terminated) {
+        t->terminated(t);
+    }
+
+    /* execute the task termination hook */
+    if (t->onterminate) {
+        t->onterminate(exitstatus, t->argc, t->argv);
     }
 
     /* land */

@@ -35,6 +35,7 @@ struct pcaio;
 struct pcaio_task;
 struct pcaio_module;
 typedef int (*pcaio_taskmain_t) (int argc, void *argv[]);
+typedef int (*pcaio_taskdone_t) (int status, int argc, void *argv[]);
 
 
 enum pcaio_module_tickstatus {
@@ -76,6 +77,10 @@ pcaio_self();
 
 int
 pcaio_relaxA(int flags);
+
+
+int
+pcaio_gatherA(struct pcaio_task *tasks[], int count);
 
 
 int

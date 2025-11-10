@@ -40,6 +40,7 @@ add_subdirectory(pcaio)
 add_library(pcaio SHARED
   $<TARGET_OBJECTS:threadpool>
   $<TARGET_OBJECTS:task>
+  $<TARGET_OBJECTS:gather>
   $<TARGET_OBJECTS:context>
   $<TARGET_OBJECTS:worker>
   $<TARGET_OBJECTS:master>
