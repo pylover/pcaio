@@ -57,13 +57,14 @@ pcaio_schedule(struct pcaio_task *t) {
 
 
 int
-pcaio_fschedule(pcaio_taskmain_t func, int *status, int argc, ...) {
+pcaio_fschedule(pcaio_taskmain_t func, int *status, pcaio_taskdone_t cb,
+        int argc, ...) {
     va_list args;
     struct pcaio_task *t;
 
     /* create a new task*/
     va_start(args, argc);
-    t = task_new(func, status, argc, args);
+    t = task_new(func, status, cb, argc, args);
     va_end(args);
 
     if (t == NULL) {
@@ -75,13 +76,14 @@ pcaio_fschedule(pcaio_taskmain_t func, int *status, int argc, ...) {
 
 
 struct pcaio_task *
-pcaio_task_new(pcaio_taskmain_t func, int *status, int argc, ...) {
+pcaio_task_new(pcaio_taskmain_t func, int *status, pcaio_taskdone_t cb,
+        int argc, ...) {
     va_list args;
     struct pcaio_task *t;
 
     /* create a new task*/
     va_start(args, argc);
-    t = task_new(func, status, argc, args);
+    t = task_new(func, status, cb, argc, args);
     va_end(args);
 
     return t;

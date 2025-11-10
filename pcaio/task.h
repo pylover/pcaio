@@ -71,7 +71,8 @@ struct pcaio_task {
 
 
 struct pcaio_task *
-task_new(pcaio_taskmain_t func, int *status, int argc, va_list args);
+task_new(pcaio_taskmain_t func, int *status, pcaio_taskdone_t cb, int argc,
+        va_list args);
 
 
 void

@@ -65,7 +65,7 @@ main() {
     fcntl(STDIN_FILENO, F_SETFL, fcntl(STDIN_FILENO, F_GETFL) | O_NONBLOCK);
 
     /* create a task */
-    t = pcaio_task_new(_echoA, NULL, 0);
+    t = pcaio_task_new(_echoA, NULL, NULL, 0);
 
     DEBUG("task: %p", t);
     /* create and register the epoll module */

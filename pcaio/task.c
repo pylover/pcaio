@@ -46,7 +46,8 @@ _taskmain(unsigned int p1, unsigned int p2);
 
 
 struct pcaio_task *
-task_new(pcaio_taskmain_t func, int *status, int argc, va_list args) {
+task_new(pcaio_taskmain_t func, int *status, pcaio_taskdone_t cb, int argc,
+        va_list args) {
     struct pcaio_task *t;
     void *stack;
     size_t allocsize;
@@ -71,6 +72,7 @@ task_new(pcaio_taskmain_t func, int *status, int argc, va_list args) {
 
     /* store entry point and status pointer */
     t->func = func;
+    t->onterminate = cb;
     t->status = status;
 
     /* copy the args */

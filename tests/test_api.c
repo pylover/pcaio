@@ -24,8 +24,15 @@
 #include "pcaio/pcaio.h"
 
 
-int hits = 0;
-int logs[6];
+static int _hits = 0;
+static int _logs[6];
+static int _terminates = 0;
+
+
+static void
+_done(int status, int argc, void *argv[]) {
+    _terminates++;
+}
 
 
 static int
@@ -33,15 +40,15 @@ _workerA(int argc, void *argv[]) {
     int l = strlen((char *)argv[0]);
     int i = l;
 
-    logs[hits++] = i;
+    _logs[_hits++] = i;
     pcaio_relaxA(0);
 
     i *= 3;
-    logs[hits++] = i;
+    _logs[_hits++] = i;
     pcaio_relaxA(0);
 
     i += 7;
-    logs[hits++] = i;
+    _logs[_hits++] = i;
     return l;
 }
 
@@ -52,22 +59,23 @@ test_api() {
     int foostatus;
     int thudstatus;
 
-    tasks[0] = pcaio_task_new(_workerA, &foostatus, 1, "foo");
-    tasks[1] = pcaio_task_new(_workerA, &thudstatus, 1, "thud");
+    tasks[0] = pcaio_task_new(_workerA, &foostatus, _done, 1, "foo");
+    tasks[1] = pcaio_task_new(_workerA, &thudstatus, _done, 1, "thud");
 
-    hits = 0;
-    memset(logs, 0, sizeof(int) * 6);
+    _hits = 0;
+    memset(_logs, 0, sizeof(int) * 6);
     eqint(0, pcaio(1, tasks, 2));
-    eqint(6, hits);
-    eqint(3, logs[0]);
-    eqint(4, logs[1]);
-    eqint(9, logs[2]);
-    eqint(12, logs[3]);
-    eqint(16, logs[4]);
-    eqint(19, logs[5]);
+    eqint(6, _hits);
+    eqint(3, _logs[0]);
+    eqint(4, _logs[1]);
+    eqint(9, _logs[2]);
+    eqint(12, _logs[3]);
+    eqint(16, _logs[4]);
+    eqint(19, _logs[5]);
 
     eqint(3, foostatus);
     eqint(4, thudstatus);
+    eqint(2, _terminates);
 }
 
 

@@ -41,7 +41,7 @@ _taskA(int argc, void *argv[]) {
     int sum = 0;
 
     for (i = 0; i < 3; i++) {
-        tasks[i] = pcaio_task_new(_subtaskA, statuses + i, 1, i + 1);
+        tasks[i] = pcaio_task_new(_subtaskA, statuses + i, NULL, 1, i + 1);
     }
     pcaio_gatherA(tasks, 3);
     for (i = 0; i < 3; i++) {
@@ -57,7 +57,7 @@ static void
 test_gather() {
     struct pcaio_task *task;
 
-    task = pcaio_task_new(_taskA, NULL, 0);
+    task = pcaio_task_new(_taskA, NULL, NULL, 0);
     eqint(0, pcaio(1, &task, 1));
 }
 
