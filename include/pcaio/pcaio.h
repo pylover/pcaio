@@ -31,9 +31,8 @@ enum moduleflags {
 };
 
 
-struct pcaio;
-struct pcaio_task;
 struct pcaio_module;
+typedef struct pcaio_task *pcaio_task_t;
 typedef void *pcaio_taskmain_t;
 typedef void (*pcaio_taskcb_t) (struct pcaio_task *);
 
