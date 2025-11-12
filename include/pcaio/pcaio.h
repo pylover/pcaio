@@ -35,7 +35,7 @@ struct pcaio;
 struct pcaio_task;
 struct pcaio_module;
 typedef void *pcaio_taskmain_t;
-typedef void (*pcaio_taskdone_t) (struct pcaio_task *);
+typedef void (*pcaio_taskcb_t) (struct pcaio_task *);
 
 
 enum pcaio_module_tickstatus {
@@ -55,14 +55,16 @@ struct pcaio_module {
 
 
 /* this structure must be provided by the user */
-int
-pcaio_fschedule(pcaio_taskmain_t func, int *status, pcaio_taskdone_t cb,
-        int argc, ...);
+struct pcaio_task *
+pcaio_fschedule(pcaio_taskmain_t func, int *status, int argc, ...);
 
 
 struct pcaio_task *
-pcaio_task_new(pcaio_taskmain_t func, int *status, pcaio_taskdone_t cb,
-        int argc, ...);
+pcaio_task_new(pcaio_taskmain_t func, int *status, int argc, ...);
+
+
+void
+pcaio_task_callback(struct pcaio_task *t, pcaio_taskcb_t cb);
 
 
 int

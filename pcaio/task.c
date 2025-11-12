@@ -53,8 +53,7 @@ typedef int (*func6_t)(void *, void *, void*, void *, void *, void *);
 
 
 struct pcaio_task *
-task_new(pcaio_taskmain_t func, int *status, pcaio_taskdone_t cb, int argc,
-        va_list args) {
+task_new(pcaio_taskmain_t func, int *status, int argc, va_list args) {
     struct pcaio_task *t;
     void *stack;
     size_t allocsize;
@@ -79,7 +78,6 @@ task_new(pcaio_taskmain_t func, int *status, pcaio_taskdone_t cb, int argc,
 
     /* store entry point and status pointer */
     t->func = func;
-    t->onterminate = cb;
     t->status = status;
 
     /* copy the args */
@@ -198,8 +196,8 @@ _taskmain(unsigned int p1, unsigned int p2) {
     }
 
     /* execute the task termination hook */
-    if (t->onterminate) {
-        t->onterminate(t);
+    if (t->callback) {
+        t->callback(t);
     }
 
     /* land */

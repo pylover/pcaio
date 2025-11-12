@@ -70,7 +70,7 @@ main() {
     pcaio_modio_use(modepoll);
 
     for (i = 0; i < TASKS_MAX; i++) {
-        tasks[i] = pcaio_task_new(_taskA, NULL, NULL, 1, i);
+        tasks[i] = pcaio_task_new(_taskA, NULL, 1, i);
     }
     pcaio(WORKERS, tasks, TASKS_MAX);
     INFO("%ld tasks has been completed successfully", TASKS_MAX);

@@ -62,7 +62,7 @@ main() {
     struct pcaio_task *tasks[TASKS_MAX];
 
     for (i = 0; i < TASKS_MAX; i++) {
-        tasks[i] = pcaio_task_new(_taskA, NULL, NULL, 0);
+        tasks[i] = pcaio_task_new(_taskA, NULL, 0);
     }
     pcaio(WORKERS, tasks, TASKS_MAX);
     INFO("%ld tasks has been completed successfully", TASKS_MAX);

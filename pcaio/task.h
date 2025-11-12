@@ -64,15 +64,14 @@ struct pcaio_task {
 
     /* provided by the user */
     pcaio_taskmain_t func;
-    pcaio_taskdone_t onterminate;
+    pcaio_taskcb_t callback;
     int argc;
     void *argv[];
 };
 
 
 struct pcaio_task *
-task_new(pcaio_taskmain_t func, int *status, pcaio_taskdone_t cb, int argc,
-        va_list args);
+task_new(pcaio_taskmain_t func, int *status, int argc, va_list args);
 
 
 void

@@ -25,7 +25,6 @@
 
 
 static int _hits = 0;
-static int _logs[6];
 static int _terminates = 0;
 
 
@@ -36,20 +35,16 @@ _done(struct pcaio_task *) {
 
 
 static int
-_workerA(const char *word) {
-    int l = strlen(word);
-    int i = l;
+_workerA(const char *word, bool more) {
+    struct pcaio_task *t;
 
-    _logs[_hits++] = i;
-    pcaio_relaxA(0);
+    _hits++;
+    if (more) {
+        t = pcaio_fschedule(_workerA, NULL, 2, "bar", false);
+        pcaio_task_callback(t, _done);
+    }
 
-    i *= 3;
-    _logs[_hits++] = i;
-    pcaio_relaxA(0);
-
-    i += 7;
-    _logs[_hits++] = i;
-    return l;
+    return strlen(word);
 }
 
 
@@ -59,25 +54,18 @@ test_api() {
     int foostatus;
     int thudstatus;
 
-    tasks[0] = pcaio_task_new(_workerA, &foostatus, _done,
-            1, "foo");
-    tasks[1] = pcaio_task_new(_workerA, &thudstatus, _done,
-            1, "thud");
+    tasks[0] = pcaio_task_new(_workerA, &foostatus, 1, "foo");
+    tasks[1] = pcaio_task_new(_workerA, &thudstatus, 1, "thud");
+    pcaio_task_callback(tasks[0], _done);
+    pcaio_task_callback(tasks[1], _done);
 
     _hits = 0;
-    memset(_logs, 0, sizeof(int) * 6);
     eqint(0, pcaio(1, tasks, 2));
-    eqint(6, _hits);
-    eqint(3, _logs[0]);
-    eqint(4, _logs[1]);
-    eqint(9, _logs[2]);
-    eqint(12, _logs[3]);
-    eqint(16, _logs[4]);
-    eqint(19, _logs[5]);
+    eqint(4, _hits);
 
     eqint(3, foostatus);
     eqint(4, thudstatus);
-    eqint(2, _terminates);
+    eqint(4, _terminates);
 }
 
 

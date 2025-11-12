@@ -52,7 +52,7 @@ _taskmain() {
     INFO("task: %d waked up",  t);
     pcaio_relaxA(0);
     INFO("task: %d done",  t);
-    pcaio_fschedule(_subtask, NULL, NULL, 0);
+    pcaio_fschedule(_subtask, NULL, 0);
     return 0;
 }
 
@@ -63,7 +63,7 @@ main() {
     struct pcaio_task *tasks[TASKS_MAX];
 
     for (i = 0; i < TASKS_MAX; i++) {
-        tasks[i] = pcaio_task_new(_taskmain, NULL, NULL, 0);
+        tasks[i] = pcaio_task_new(_taskmain, NULL, 0);
     }
     pcaio(WORKERS, tasks, TASKS_MAX);
     INFO("%ld tasks has been completed successfully", TASKS_MAX);

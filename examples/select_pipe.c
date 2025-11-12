@@ -109,8 +109,8 @@ main() {
     }
 
     /* create a task */
-    t[0] = pcaio_task_new((pcaio_taskmain_t)_consumer, NULL, NULL, 1, q[0]);
-    t[1] = pcaio_task_new((pcaio_taskmain_t)_producer, NULL, NULL, 1, q[1]);
+    t[0] = pcaio_task_new(_consumer, NULL, 1, q[0]);
+    t[1] = pcaio_task_new(_producer, NULL, 1, q[1]);
 
     /* main loop */
     ret = pcaio(WORKERS, t, 2);
