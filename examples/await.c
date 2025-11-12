@@ -42,7 +42,7 @@ _subtaskA() {
 }
 
 static int
-_taskA(int argc, void *argv[]) {
+_taskA() {
     int v;
 
     INFO("task: started");

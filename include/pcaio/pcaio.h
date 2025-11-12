@@ -34,8 +34,8 @@ enum moduleflags {
 struct pcaio;
 struct pcaio_task;
 struct pcaio_module;
-typedef int (*pcaio_taskmain_t) (int argc, void *argv[]);
-typedef void (*pcaio_taskdone_t) (int status, int argc, void *argv[]);
+typedef void *pcaio_taskmain_t;
+typedef void (*pcaio_taskdone_t) (struct pcaio_task *);
 
 
 enum pcaio_module_tickstatus {

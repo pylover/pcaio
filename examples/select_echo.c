@@ -37,7 +37,7 @@
 
 
 static int
-_echo(int argc, void *argv[]) {
+_echo() {
     int ret = 0;
     char buff[CHUNKSIZE];
 

@@ -25,16 +25,14 @@
 
 
 static int
-_subtaskA(int argc, void *argv[]) {
-    unsigned int seed = (unsigned long) argv[0];
-
+_subtaskA(unsigned int seed) {
     pcaio_relaxA(0);
     return seed * seed;
 }
 
 
 static int
-_taskA(int argc, void *argv[]) {
+_taskA() {
     int i;
     struct pcaio_task *tasks[3];
     int statuses[3];

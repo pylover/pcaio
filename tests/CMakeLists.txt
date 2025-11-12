@@ -3,9 +3,9 @@ include(CTest)
 list(APPEND testrules
   api
   queueT
+  gather
   ringT
   listT
-  gather
 )
 
 

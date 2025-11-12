@@ -30,14 +30,14 @@ static int _terminates = 0;
 
 
 static void
-_done(int status, int argc, void *argv[]) {
+_done(struct pcaio_task *) {
     _terminates++;
 }
 
 
 static int
-_workerA(int argc, void *argv[]) {
-    int l = strlen((char *)argv[0]);
+_workerA(const char *word) {
+    int l = strlen(word);
     int i = l;
 
     _logs[_hits++] = i;
@@ -59,8 +59,10 @@ test_api() {
     int foostatus;
     int thudstatus;
 
-    tasks[0] = pcaio_task_new(_workerA, &foostatus, _done, 1, "foo");
-    tasks[1] = pcaio_task_new(_workerA, &thudstatus, _done, 1, "thud");
+    tasks[0] = pcaio_task_new(_workerA, &foostatus, _done,
+            1, "foo");
+    tasks[1] = pcaio_task_new(_workerA, &thudstatus, _done,
+            1, "thud");
 
     _hits = 0;
     memset(_logs, 0, sizeof(int) * 6);

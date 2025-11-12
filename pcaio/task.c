@@ -43,6 +43,13 @@
 
 static void
 _taskmain(unsigned int p1, unsigned int p2);
+typedef int (*func0_t)(void);
+typedef int (*func1_t)(void *);
+typedef int (*func2_t)(void *, void *);
+typedef int (*func3_t)(void *, void *, void*);
+typedef int (*func4_t)(void *, void *, void*, void *);
+typedef int (*func5_t)(void *, void *, void*, void *, void *);
+typedef int (*func6_t)(void *, void *, void*, void *, void *, void *);
 
 
 struct pcaio_task *
@@ -151,7 +158,30 @@ _taskmain(unsigned int p1, unsigned int p2) {
     asm volatile("" ::: "memory");
 
     /* execute the task's main function (aka start the task!) */
-    exitstatus = t->func(t->argc, t->argv);
+    if (t->argc == 0) {
+        exitstatus = ((func0_t)t->func)();
+    }
+    if (t->argc == 1) {
+        exitstatus = ((func1_t)t->func)(t->argv[0]);
+    }
+    else if (t->argc == 2) {
+        exitstatus = ((func2_t)t->func)(t->argv[0], t->argv[1]);
+    }
+    else if (t->argc == 3) {
+        exitstatus = ((func3_t)t->func)(t->argv[0], t->argv[1], t->argv[2]);
+    }
+    else if (t->argc == 4) {
+        exitstatus = ((func4_t)t->func)(t->argv[0], t->argv[1], t->argv[2],
+                t->argv[3]);
+    }
+    else if (t->argc == 5) {
+        exitstatus = ((func5_t)t->func)(t->argv[0], t->argv[1], t->argv[2],
+                t->argv[3], t->argv[4]);
+    }
+    else if (t->argc == 6) {
+        exitstatus = ((func6_t)t->func)(t->argv[0], t->argv[1], t->argv[2],
+                t->argv[3], t->argv[4], t->argv[5]);
+    }
 
     /* tell the worker the task is completed and there is nothing to
      * re-schedule anymore. */
@@ -169,7 +199,7 @@ _taskmain(unsigned int p1, unsigned int p2) {
 
     /* execute the task termination hook */
     if (t->onterminate) {
-        t->onterminate(exitstatus, t->argc, t->argv);
+        t->onterminate(t);
     }
 
     /* land */

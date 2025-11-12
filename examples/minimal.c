@@ -32,7 +32,7 @@
 
 
 static int
-_subtask(int argc, void *argv[]) {
+_subtask() {
     struct pcaio_task *t = pcaio_self();
 
     INFO("subtask: %d started",  t);
@@ -44,7 +44,7 @@ _subtask(int argc, void *argv[]) {
 }
 
 static int
-_taskmain(int argc, void *argv[]) {
+_taskmain() {
     struct pcaio_task *t = pcaio_self();
 
     INFO("task: %d started",  t);

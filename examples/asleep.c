@@ -35,9 +35,8 @@
 
 
 static int
-_taskA(int argc, void *argv[]) {
+_taskA(long id) {
     int i;
-    long id = (long)argv[0];
     struct pcaio_timer *timer;
 
     /* NULL means to use the default io module configured via

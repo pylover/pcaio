@@ -37,11 +37,10 @@
 
 
 static int
-_producer(int argc, int argv[]) {
+_producer(int fd) {
     int i;
     int j;
     int rfd;
-    int fd = argv[0];
     int ret = 0;
     unsigned char buff[CHUNKSIZE];
 
@@ -74,8 +73,7 @@ _producer(int argc, int argv[]) {
 
 
 static int
-_consumer(int argc, int argv[]) {
-    int fd = argv[0];
+_consumer(int fd) {
     int ret;
     char buff[CHUNKSIZE];
 
