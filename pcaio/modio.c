@@ -19,8 +19,12 @@
 
 
 /* system */
-#include <sys/socket.h>
 #include <sys/uio.h>
+
+/* posix */
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 /* thirdparty */
 #include <clog.h>
@@ -231,3 +235,26 @@ retry:
 
 
 #endif  // _DEFAULT_SOURCE
+
+
+#if _POSIX_C_SOURCE >= 200112L
+
+int
+getaddrinfoA(const char *restrict node, const char *restrict service,
+        const struct addrinfo *restrict hints,
+        struct addrinfo **restrict result) {
+    int ret;
+
+retry:
+    ret = getaddrinfo(node, service, hints, result);
+    if (RETRY(ret)) {
+        pcaio_relaxA(0);
+        errno = 0;
+        goto retry;
+    }
+
+    return ret;
+}
+
+
+#endif  // _POSIX_C_SOURCE >= 200112L
