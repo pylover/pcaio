@@ -80,6 +80,10 @@ acceptA(int sockfd, struct sockaddr *restrict addr,
         socklen_t *restrict addrlen);
 
 
+int
+connectA(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+
+
 #ifdef _GNU_SOURCE
 int
 accept4A(int sockfd, struct sockaddr *restrict addr,

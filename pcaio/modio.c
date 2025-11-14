@@ -177,6 +177,31 @@ retry:
 }
 
 
+int
+connectA(int fd, const struct sockaddr *addr, socklen_t addrlen) {
+    int ret;
+
+    pcaio_relaxA(0);
+
+retry:
+    ret = connect(fd, addr, addrlen);
+    if (fd == -1) {
+        if (!RETRY(errno)) {
+            return -1;
+        }
+
+        if (pcaio_modio_await(fd, IOIN)) {
+            return -1;
+        }
+
+        errno = 0;
+        goto retry;
+    }
+
+    return ret;
+}
+
+
 #ifdef _GNU_SOURCE
 
 int
