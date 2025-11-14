@@ -93,4 +93,15 @@ writevA(int fd, const struct iovec *iov, int iovcnt);
 #endif  // _DEFAULT_SOURCE
 
 
+#if _POSIX_C_SOURCE >= 200112L
+/* posix */
+#include <sys/types.h>
+#include <netdb.h>
+int
+getaddrinfoA(const char *restrict node, const char *restrict service,
+        const struct addrinfo *restrict hints,
+        struct addrinfo **restrict result);
+#endif  // _POSIX_C_SOURCE >= 200112L
+
+
 #endif  // INCLUDE_PCAIO_MODIO_H_
