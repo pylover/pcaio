@@ -190,7 +190,7 @@ retry:
             return -1;
         }
 
-        if (pcaio_modio_await(fd, IOIN)) {
+        if (pcaio_modio_await(fd, IOOUT)) {
             return -1;
         }
 
@@ -272,13 +272,20 @@ getaddrinfoA(const char *restrict node, const char *restrict service,
 
 retry:
     ret = getaddrinfo(node, service, hints, result);
-    if (RETRY(ret)) {
-        pcaio_relaxA(0);
-        errno = 0;
-        goto retry;
+    if (ret) {
+        // ERROR("getaddrinfo: %s", gai_strerror(ret));
+        ERROR("getaddrinfo: %d", ret);
+        if (ret == EAI_AGAIN) {
+            pcaio_relaxA(0);
+            errno = 0;
+            goto retry;
+        }
+
+        return -1;
     }
 
-    return ret;
+    errno = 0;
+    return 0;
 }
 
 
