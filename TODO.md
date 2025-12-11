@@ -1,3 +1,4 @@
+- configure pthread's stacksize
 - readme
 - gather tasks
 - select module shoud not track tasks
